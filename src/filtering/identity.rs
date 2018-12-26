@@ -1,5 +1,4 @@
-use json::JsonValue;
-use json::object;
+use json::*;
 
 pub fn identity(input: Option<&JsonValue>) -> Option<&JsonValue> {
   match input {

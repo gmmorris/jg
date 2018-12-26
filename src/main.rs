@@ -1,5 +1,3 @@
-extern crate clap;
-
 use clap::{Arg, App};
 use std::io::{self, BufRead};
 
