@@ -14,10 +14,10 @@ fn print_input(filter: &str) {
 }
 
 fn main() {
-    let matches = App::new("jqr")
+    let matches = App::new("jgrep")
         .version("0.0.1")
         .author("Gidi Meir Morris <gidi@gidi.io>")
-        .about("jqr is a tool for processing JSON input")
+        .about("jgrep searches for PATTERNS in json input, jgrep prints each json object that matches a pattern.")
         .arg(
             Arg::with_name("filter")
                  .required(true)

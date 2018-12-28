@@ -1,5 +1,5 @@
 [package]
-name = "jqr"
+name = "jgrep"
 version = "0.1.0"
 authors = ["chekofif <gidi@gidi.io>"]
 edition = "2018"
