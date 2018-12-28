@@ -1,14 +1,14 @@
 use clap::{Arg, App};
 use std::io::{self, BufRead};
 
-mod filtering;
+mod selection;
 
 fn print_input(filter: &str) {
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
-        if filtering::identity::matches(filter) {
+        if selection::identity::matches(filter) {
             let line = line.expect("Could not read line from standard in");
-            println!(" - {}", line);
+            println!("{}", line);
         }
     }
 }
@@ -29,7 +29,7 @@ fn main() {
     
     let filter = matches.value_of("filter").unwrap();
     
-    println!("filter: {}", filter);
+    // println!("filter: {}", filter);
 
     print_input(filter);
 }
