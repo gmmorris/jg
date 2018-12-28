@@ -28,12 +28,19 @@ mod cli {
         cmd
             .arg(".");
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("{}\n{ \"id\": \"404c18ce-04ac-457c-99f5-d548b27aa583\" }\n");
+        let mut assert_cmd = stdin_cmd.buffer(
+"{}
+{ \"id\": \"404c18ce-04ac-457c-99f5-d548b27aa583\" }\n"
+        );
 
         assert_cmd
             .assert()
             .success()
-            .stdout("{}\n{ \"id\": \"404c18ce-04ac-457c-99f5-d548b27aa583\" }\n");
+            .stdout(
+"{}
+{ \"id\": \"404c18ce-04ac-457c-99f5-d548b27aa583\" }\n"
+            );
+
     }
 
     #[test]
@@ -68,19 +75,5 @@ mod cli {
     //         .success()
     //         .stdout("Sum of frequencies: 592\n\
     //                  First repeating frequency: 241\n");
-    // }
-
-    // #[test]
-    // fn test_invalid_num_of_args() {
-    //     let mut cmd = Command::main_binary().unwrap();
-
-    //     cmd
-    //         .arg("blah")
-    //         .arg("blah");
-
-    //     cmd
-    //         .assert()
-    //         .failure()
-    //         .stderr("Error: Invalid number of arguments: 2. Aborting.\n");
     // }
 }

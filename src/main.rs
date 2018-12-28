@@ -13,6 +13,11 @@ fn print_input(filter: &str) {
     }
 }
 
+fn verbose(filter: &str) {
+    println!("filter: {}", filter);
+    println!("-----");
+}
+
 fn main() {
     let matches = App::new("jgrep")
         .version("0.0.1")
@@ -20,16 +25,23 @@ fn main() {
         .about("jgrep searches for PATTERNS in json input, jgrep prints each json object that matches a pattern.")
         .arg(
             Arg::with_name("filter")
-                 .required(true)
-                 .takes_value(true)
-                 .index(1)
-                 .help("JSON query filter")
+                .required(true)
+                .takes_value(true)
+                .index(1)
+                .help("JSON query filter")
+        )
+        .arg(
+            Arg::with_name("v")
+                .short("v")
+                .help("Sets the level of verbosity")
         )
         .get_matches();
     
     let filter = matches.value_of("filter").unwrap();
     
-    // println!("filter: {}", filter);
+    if matches.occurrences_of("v") > 0 {
+        verbose(filter);
+    }
 
     print_input(filter);
 }
