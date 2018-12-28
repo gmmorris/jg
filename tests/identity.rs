@@ -1,10 +1,8 @@
 #[cfg(test)]
 mod cli {
-    // use std::io::Write;
     use std::process::Command;
 
     use assert_cmd::prelude::*;
-    // use tempfile;
 
     #[test]
     fn should_match_single_json_when_selector_is_identity() {
@@ -57,23 +55,4 @@ mod cli {
             .success()
             .stdout("");
     }
-
-    // #[test]
-    // fn test_run_input_file() {
-    //     // the actual example file from Advent of Code
-
-    //     let mut cmd = Command::main_binary().unwrap();
-
-    //     // read in the example input, write to tmp file and run the command
-    //     let mut tmp_file = tempfile::NamedTempFile::new().unwrap();
-    //     tmp_file.write_all(include_str!("../input/input").as_bytes()).unwrap();
-
-    //     cmd.arg(&tmp_file.path());
-
-    //     cmd
-    //         .assert()
-    //         .success()
-    //         .stdout("Sum of frequencies: 592\n\
-    //                  First repeating frequency: 241\n");
-    // }
 }

@@ -1,15 +1,29 @@
 use clap::{Arg, App};
-use std::io::{self, BufRead};
+use std::io::{self, BufRead, BufReader, Error};
+use std::string::String;
+use std::result::Result;
+use std::fs::File;
 
 mod selection;
 
 fn print_input(filter: &str) {
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
-        if selection::identity::matches(filter) {
-            let line = line.expect("Could not read line from standard in");
-            println!("{}", line);
-        }
+        match_line(filter, line)
+    }
+}
+
+fn print_input_file(filter: &str, input: &str) {
+    let file = File::open(input).unwrap();
+    for line in BufReader::new(file).lines() {
+        match_line(filter, line)
+    }
+}
+
+fn match_line(filter: &str, line: Result<String, Error>) {
+    if selection::identity::matches(filter) {
+        let line = line.expect("Could not read line from standard in");
+        println!("{}", line);
     }
 }
 
@@ -27,8 +41,14 @@ fn main() {
             Arg::with_name("filter")
                 .required(true)
                 .takes_value(true)
-                .index(1)
+                .multiple(true)
                 .help("JSON query filter")
+        )
+        .arg(
+            Arg::with_name("input")
+                .short("i")
+                .takes_value(true)
+                .help("JSON input file")
         )
         .arg(
             Arg::with_name("v")
@@ -39,9 +59,13 @@ fn main() {
     
     let filter = matches.value_of("filter").unwrap();
     
-    if matches.occurrences_of("v") > 0 {
+    if matches.is_present("v") {
         verbose(filter);
     }
 
-    print_input(filter);
+    if let Some(in_file) = matches.value_of("input") {
+        print_input_file(filter, in_file);
+    } else {
+        print_input(filter);
+    }
 }
