@@ -1,4 +1,5 @@
 use clap::{App, Arg};
+use json::*;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Error};
 use std::result::Result;
@@ -21,9 +22,18 @@ fn print_input_file(filter: &str, input: &str) {
 }
 
 fn match_line(filter: &str, line: Result<String, Error>) {
-    if selection::identity::matches(filter) {
-        let line = line.expect("Could not read line from standard in");
-        println!("{}", line);
+    let input = line.expect("Could not read line from standard in");
+    let json_input = json::parse(&input);
+    if json_input.is_ok() {
+        match_json(filter, json_input.unwrap())
+    }
+}
+
+fn match_json(filter: &str, json_input: JsonValue) {
+    if selection::identity::matches(filter)
+        && selection::identity::identity(Some(&json_input)).is_some()
+    {
+        println!("{}", json::stringify(json_input))
     }
 }
 

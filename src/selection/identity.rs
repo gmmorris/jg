@@ -1,16 +1,13 @@
 use json::*;
 
 pub fn identity(input: Option<&JsonValue>) -> Option<&JsonValue> {
-  match input {
-    Some(_) => input,
-    _ => None
-  }
+  input
 }
 
 pub fn matches(pattern: &str) -> bool {
   match pattern {
     "." => true,
-    _ => false
+    _ => false,
   }
 }
 
@@ -35,15 +32,15 @@ mod tests {
 
   #[test]
   fn should_return_some_json_when_json_is_present() {
-    let ref data = object!{
+    let ref data = object! {
         "name"    => "John Doe",
         "age"     => 30
     };
 
     assert_eq!(
-      match identity(Some(data)){
+      match identity(Some(data)) {
         Some(d) => d,
-        None => &json::Null
+        None => &json::Null,
       },
       data
     );
