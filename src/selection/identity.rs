@@ -41,12 +41,6 @@ mod tests {
         "age"     => 30
     };
 
-    assert_eq!(
-      match identity(Some(data)) {
-        Some(d) => d,
-        None => &json::Null,
-      },
-      data
-    );
+    assert_eq!(identity(Some(data)).unwrap(), data);
   }
 }
