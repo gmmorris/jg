@@ -1,28 +1,32 @@
-use json::*;
+use json::JsonValue;
 
 pub fn identity(input: Option<&JsonValue>) -> Option<&JsonValue> {
   input
 }
 
-pub fn matches(pattern: &str) -> bool {
-  match pattern {
-    "." => true,
-    _ => false,
+pub fn greedily_matches(maybe_pattern: Option<&str>) -> Result<Option<&str>, Option<&str>> {
+  match maybe_pattern {
+    Some(pattern) => match pattern {
+      "." => Ok(None),
+      _ => Err(maybe_pattern),
+    },
+    None => Err(maybe_pattern),
   }
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
+  use json::object;
 
   #[test]
   fn should_match_dot() {
-    assert_eq!(matches("."), true);
+    assert_eq!(greedily_matches(Some(".")), Ok(None));
   }
 
   #[test]
   fn shouldnt_match_anything_else() {
-    assert_eq!(matches(".prop"), false);
+    assert_eq!(greedily_matches(Some(".prop")), Err(Some(".prop")));
   }
 
   #[test]

@@ -30,10 +30,11 @@ fn match_line(filter: &str, line: Result<String, Error>) {
 }
 
 fn match_json(filter: &str, json_input: JsonValue) {
-    if selection::identity::matches(filter)
-        && selection::identity::identity(Some(&json_input)).is_some()
-    {
-        println!("{}", json::stringify(json_input))
+    let selection_matches = selection::identity::greedily_matches(Some(filter));
+    if selection_matches.is_ok() && selection_matches.unwrap().is_none() {
+        if selection::identity::identity(Some(&json_input)).is_some() {
+            println!("{}", json::stringify(json_input))
+        }
     }
 }
 
