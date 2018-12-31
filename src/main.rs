@@ -1,8 +1,8 @@
-use clap::{Arg, App};
-use std::io::{self, BufRead, BufReader, Error};
-use std::string::String;
-use std::result::Result;
+use clap::{App, Arg};
 use std::fs::File;
+use std::io::{self, BufRead, BufReader, Error};
+use std::result::Result;
+use std::string::String;
 
 mod selection;
 
@@ -56,9 +56,9 @@ fn main() {
                 .help("Sets the level of verbosity")
         )
         .get_matches();
-    
+
     let filter = matches.value_of("filter").unwrap();
-    
+
     if matches.is_present("v") {
         verbose(filter);
     }
