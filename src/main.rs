@@ -1,6 +1,7 @@
 use clap::{App, Arg};
 use json::*;
 use std::fs::File;
+use std::io::ErrorKind;
 use std::io::{self, BufRead, BufReader, Error};
 use std::result::Result;
 use std::string::String;
@@ -15,7 +16,18 @@ fn print_input(filter: &str) {
 }
 
 fn print_input_file(filter: &str, input: &str) {
-    let file = File::open(input).unwrap();
+    let file = match File::open(input) {
+        Ok(contents) => contents,
+        Err(error) => match error.kind() {
+            ErrorKind::NotFound => {
+                panic!("The specified input file could not be found: {:?}", input)
+            }
+            other_error => panic!(
+                "There was a problem opening the file '{:?}': {:?}",
+                input, other_error
+            ),
+        },
+    };
     for line in BufReader::new(file).lines() {
         match_line(filter, line)
     }
@@ -31,11 +43,17 @@ fn match_line(filter: &str, line: Result<String, Error>) {
 
 fn match_json(filter: &str, json_input: JsonValue) {
     let selection_matches = selection::identity::greedily_matches(Some(filter));
-    if selection_matches.is_ok() && selection_matches.unwrap().is_none() {
-        if selection::identity::identity(Some(&json_input)).is_some() {
-            println!("{}", json::stringify(json_input))
+    match selection_matches {
+        Ok(_) => {
+            if selection::identity::identity(Some(&json_input)).is_some() {
+                println!("{}", json::stringify(json_input))
+            }
         }
-    }
+        Err(unmatchedPattern) => panic!(
+            "There was a problem matching the pattern: {:?}",
+            unmatchedPattern
+        ),
+    };
 }
 
 fn verbose(filter: &str) {
