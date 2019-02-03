@@ -33,7 +33,7 @@ mod cli {
     }
 
     #[test]
-    fn should_not_match_all_when_selector_is_identity() {
+    fn should_not_match_all_when_selector_is_not_identity() {
         let mut cmd = Command::main_binary().unwrap();
 
         cmd.arg(".prop");

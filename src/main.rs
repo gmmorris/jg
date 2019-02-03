@@ -1,37 +1,11 @@
 use clap::{App, Arg};
 use json::*;
-use std::fs::File;
-use std::io::ErrorKind;
-use std::io::{self, BufRead, BufReader, Error};
+use std::io::Error;
 use std::result::Result;
 use std::string::String;
 
+mod input;
 mod selection;
-
-fn print_input(filter: &str) {
-    let stdin = io::stdin();
-    for line in stdin.lock().lines() {
-        match_line(filter, line)
-    }
-}
-
-fn print_input_file(filter: &str, input: &str) {
-    let file = match File::open(input) {
-        Ok(contents) => contents,
-        Err(error) => match error.kind() {
-            ErrorKind::NotFound => {
-                panic!("The specified input file could not be found: {:?}", input)
-            }
-            other_error => panic!(
-                "There was a problem opening the file '{:?}': {:?}",
-                input, other_error
-            ),
-        },
-    };
-    for line in BufReader::new(file).lines() {
-        match_line(filter, line)
-    }
-}
 
 fn match_line(filter: &str, line: Result<String, Error>) {
     let input = line.expect("Could not read line from standard in");
@@ -43,17 +17,9 @@ fn match_line(filter: &str, line: Result<String, Error>) {
 
 fn match_json(filter: &str, json_input: JsonValue) {
     let selection_matches = selection::identity::greedily_matches(Some(filter));
-    match selection_matches {
-        Ok(_) => {
-            if selection::identity::identity(Some(&json_input)).is_some() {
-                println!("{}", json::stringify(json_input))
-            }
-        }
-        Err(unmatchedPattern) => panic!(
-            "There was a problem matching the pattern: {:?}",
-            unmatchedPattern
-        ),
-    };
+    if selection_matches.is_ok() && selection::identity::identity(Some(&json_input)).is_some() {
+        println!("{}", json::stringify(json_input))
+    }
 }
 
 fn verbose(filter: &str) {
@@ -93,8 +59,8 @@ fn main() {
     }
 
     if let Some(in_file) = matches.value_of("input") {
-        print_input_file(filter, in_file);
+        input::print_input_file(filter, in_file, &match_line);
     } else {
-        print_input(filter);
+        input::print_input(filter, &match_line);
     }
 }
