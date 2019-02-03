@@ -7,16 +7,16 @@ use std::string::String;
 mod input;
 mod selection;
 
-fn match_line(filter: fn(Option<&JsonValue>) -> Option<&JsonValue>, line: Result<String, Error>) {
+fn match_line(matcher: fn(Option<&JsonValue>) -> Option<&JsonValue>, line: Result<String, Error>) {
     let input = line.expect("Could not read line from standard in");
     let json_input = json::parse(&input);
     if json_input.is_ok() {
-        match_json(filter, json_input.unwrap())
+        match_json(matcher, json_input.unwrap())
     }
 }
 
-fn match_json(filter: fn(Option<&JsonValue>) -> Option<&JsonValue>, json_input: JsonValue) {
-    if filter(Some(&json_input)).is_some() {
+fn match_json(matcher: fn(Option<&JsonValue>) -> Option<&JsonValue>, json_input: JsonValue) {
+    if matcher(Some(&json_input)).is_some() {
         println!("{}", json::stringify(json_input))
     }
 }
