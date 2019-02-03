@@ -1,17 +1,25 @@
+use json::JsonValue;
 use std::fs::File;
 use std::io::ErrorKind;
 use std::io::{self, BufRead, BufReader, Error};
 use std::result::Result;
 use std::string::String;
 
-pub fn print_input(filter: &str, match_line: &Fn(&str, Result<String, Error>)) {
+pub fn print_input(
+  filter: fn(Option<&JsonValue>) -> Option<&JsonValue>,
+  match_line: &Fn(fn(Option<&JsonValue>) -> Option<&JsonValue>, Result<String, Error>),
+) {
   let stdin = io::stdin();
   for line in stdin.lock().lines() {
     match_line(filter, line)
   }
 }
 
-pub fn print_input_file(filter: &str, input: &str, match_line: &Fn(&str, Result<String, Error>)) {
+pub fn print_input_file(
+  filter: fn(Option<&JsonValue>) -> Option<&JsonValue>,
+  input: &str,
+  match_line: &Fn(fn(Option<&JsonValue>) -> Option<&JsonValue>, Result<String, Error>),
+) {
   let file = match File::open(input) {
     Ok(contents) => contents,
     Err(error) => match error.kind() {

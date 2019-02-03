@@ -4,6 +4,8 @@ mod cli {
 
     use assert_cmd::prelude::*;
 
+    use predicates::prelude::*;
+
     #[test]
     fn should_match_single_json_when_selector_is_identity() {
         let mut cmd = Command::main_binary().unwrap();
@@ -40,6 +42,8 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer("{}\n");
 
-        assert_cmd.assert().success().stdout("");
+        assert_cmd.assert().failure().stderr(
+            predicate::str::is_match(".*'Invalid filter: Some\\(\"\\.prop\"\\)'.*").unwrap(),
+        );
     }
 }

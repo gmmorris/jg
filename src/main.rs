@@ -7,7 +7,7 @@ use std::string::String;
 mod input;
 mod selection;
 
-fn match_line(filter: &str, line: Result<String, Error>) {
+fn match_line(filter: fn(Option<&JsonValue>) -> Option<&JsonValue>, line: Result<String, Error>) {
     let input = line.expect("Could not read line from standard in");
     let json_input = json::parse(&input);
     if json_input.is_ok() {
@@ -15,10 +15,19 @@ fn match_line(filter: &str, line: Result<String, Error>) {
     }
 }
 
-fn match_json(filter: &str, json_input: JsonValue) {
-    let selection_matches = selection::identity::greedily_matches(Some(filter));
-    if selection_matches.is_ok() && selection::identity::identity(Some(&json_input)).is_some() {
+fn match_json(filter: fn(Option<&JsonValue>) -> Option<&JsonValue>, json_input: JsonValue) {
+    if filter(Some(&json_input)).is_some() {
         println!("{}", json::stringify(json_input))
+    }
+}
+
+fn match_filters(filter: &str) -> fn(Option<&JsonValue>) -> Option<&JsonValue> {
+    let selection_matches = selection::identity::greedily_matches(Some(filter));
+    match selection_matches {
+        Ok(_) => selection::identity::identity,
+        Err(unmatched_filter) => {
+            panic!("Invalid filter: {:?}", unmatched_filter);
+        }
     }
 }
 
@@ -58,9 +67,10 @@ fn main() {
         verbose(filter);
     }
 
+    let matchers = match_filters(filter);
     if let Some(in_file) = matches.value_of("input") {
-        input::print_input_file(filter, in_file, &match_line);
+        input::print_input_file(matchers, in_file, &match_line);
     } else {
-        input::print_input(filter, &match_line);
+        input::print_input(matchers, &match_line);
     }
 }
