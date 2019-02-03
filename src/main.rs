@@ -21,16 +21,6 @@ fn match_json(matcher: fn(Option<&JsonValue>) -> Option<&JsonValue>, json_input:
     }
 }
 
-fn match_filters(filter: &str) -> fn(Option<&JsonValue>) -> Option<&JsonValue> {
-    let selection_matches = selection::identity::greedily_matches(Some(filter));
-    match selection_matches {
-        Ok(_) => selection::identity::identity,
-        Err(unmatched_filter) => {
-            panic!("Invalid filter: {:?}", unmatched_filter);
-        }
-    }
-}
-
 fn verbose(filter: &str) {
     println!("filter: {}", filter);
     println!("-----");
@@ -67,7 +57,7 @@ fn main() {
         verbose(filter);
     }
 
-    let matchers = match_filters(filter);
+    let matchers = selection::match_filters(filter);
     if let Some(in_file) = matches.value_of("input") {
         input::print_input_file(matchers, in_file, &match_line);
     } else {
