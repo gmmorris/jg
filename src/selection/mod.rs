@@ -1,5 +1,6 @@
 use json::*;
 mod identity;
+mod prop;
 
 pub fn match_filters(filter: &str) -> fn(Option<&JsonValue>) -> Option<&JsonValue> {
   let selection_matches = identity::greedily_matches(Some(filter));

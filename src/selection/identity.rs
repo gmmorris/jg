@@ -4,6 +4,10 @@ pub fn identity(input: Option<&JsonValue>) -> Option<&JsonValue> {
   input
 }
 
+// pub fn identity() -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
+//   Box::new(|input: Option<&JsonValue>| input)
+// }
+
 pub fn greedily_matches(maybe_pattern: Option<&str>) -> Result<Option<&str>, Option<&str>> {
   match maybe_pattern {
     Some(pattern) => match pattern {

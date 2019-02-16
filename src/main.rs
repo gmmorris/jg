@@ -1,3 +1,7 @@
+#[macro_use]
+extern crate lazy_static;
+extern crate regex;
+
 use clap::{App, Arg};
 use json::*;
 use std::io::Error;
