@@ -1,17 +1,15 @@
 use json::JsonValue;
 
-// pub fn identity(input: Option<&JsonValue>) -> Option<&JsonValue> {
-//   input
-// }
-
 pub fn identity() -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
   Box::new(|input: Option<&JsonValue>| input)
 }
 
-pub fn greedily_matches(maybe_pattern: Option<&str>) -> Result<Option<&str>, Option<&str>> {
+pub fn greedily_matches(
+  maybe_pattern: Option<&str>,
+) -> Result<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>, Option<&str>> {
   match maybe_pattern {
     Some(pattern) => match pattern {
-      "." => Ok(None),
+      "." => Ok(identity()),
       _ => Err(maybe_pattern),
     },
     None => Err(maybe_pattern),
@@ -25,12 +23,28 @@ mod tests {
 
   #[test]
   fn should_match_dot() {
-    assert_eq!(greedily_matches(Some(".")), Ok(None));
+    let res = greedily_matches(Some("."));
+    assert!(res.is_ok());
+
+    let ref data = object! {
+        "name"    => "John Doe",
+        "age"     => 30
+    };
+
+    match res {
+      Ok(matcher) => assert_eq!(matcher(Some(data)), Some(data)),
+      _ => panic!("Invalid result"),
+    }
   }
 
   #[test]
   fn shouldnt_match_anything_else() {
-    assert_eq!(greedily_matches(Some(".prop")), Err(Some(".prop")));
+    let res = greedily_matches(Some(".prop"));
+    assert!(res.is_err());
+    match res {
+      Err(Some(selector)) => assert_eq!(selector, ".prop"),
+      _ => panic!("Invalid result"),
+    }
   }
 
   #[test]
