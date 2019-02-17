@@ -1,12 +1,12 @@
 use json::JsonValue;
 
-pub fn identity(input: Option<&JsonValue>) -> Option<&JsonValue> {
-  input
-}
-
-// pub fn identity() -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
-//   Box::new(|input: Option<&JsonValue>| input)
+// pub fn identity(input: Option<&JsonValue>) -> Option<&JsonValue> {
+//   input
 // }
+
+pub fn identity() -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
+  Box::new(|input: Option<&JsonValue>| input)
+}
 
 pub fn greedily_matches(maybe_pattern: Option<&str>) -> Result<Option<&str>, Option<&str>> {
   match maybe_pattern {
@@ -35,7 +35,7 @@ mod tests {
 
   #[test]
   fn should_return_none_when_json_isnt_present() {
-    assert_eq!(identity(None), None);
+    assert_eq!(identity()(None), None);
   }
 
   #[test]
@@ -45,6 +45,6 @@ mod tests {
         "age"     => 30
     };
 
-    assert_eq!(identity(Some(data)).unwrap(), data);
+    assert_eq!(identity()(Some(data)).unwrap(), data);
   }
 }

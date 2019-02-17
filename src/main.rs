@@ -11,7 +11,10 @@ use std::string::String;
 mod input;
 mod selection;
 
-fn match_line(matcher: fn(Option<&JsonValue>) -> Option<&JsonValue>, line: Result<String, Error>) {
+fn match_line(
+    matcher: &Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
+    line: Result<String, Error>,
+) {
     let input = line.expect("Could not read line from standard in");
     let json_input = json::parse(&input);
     if json_input.is_ok() {
@@ -19,7 +22,7 @@ fn match_line(matcher: fn(Option<&JsonValue>) -> Option<&JsonValue>, line: Resul
     }
 }
 
-fn match_json(matcher: fn(Option<&JsonValue>) -> Option<&JsonValue>, json_input: JsonValue) {
+fn match_json(matcher: &Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>, json_input: JsonValue) {
     if matcher(Some(&json_input)).is_some() {
         println!("{}", json::stringify(json_input))
     }

@@ -6,19 +6,19 @@ use std::result::Result;
 use std::string::String;
 
 pub fn print_input(
-  filter: fn(Option<&JsonValue>) -> Option<&JsonValue>,
-  match_line: &Fn(fn(Option<&JsonValue>) -> Option<&JsonValue>, Result<String, Error>),
+  filter: Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
+  match_line: &Fn(&Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>, Result<String, Error>),
 ) {
   let stdin = io::stdin();
   for line in stdin.lock().lines() {
-    match_line(filter, line)
+    match_line(&filter, line)
   }
 }
 
 pub fn print_input_file(
-  filter: fn(Option<&JsonValue>) -> Option<&JsonValue>,
+  filter: Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
   input: &str,
-  match_line: &Fn(fn(Option<&JsonValue>) -> Option<&JsonValue>, Result<String, Error>),
+  match_line: &Fn(&Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>, Result<String, Error>),
 ) {
   let file = match File::open(input) {
     Ok(contents) => contents,
@@ -31,6 +31,6 @@ pub fn print_input_file(
     },
   };
   for line in BufReader::new(file).lines() {
-    match_line(filter, line)
+    match_line(&filter, line)
   }
 }
