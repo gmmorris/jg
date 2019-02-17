@@ -11,7 +11,9 @@ pub fn prop(prop_value: String) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonVal
   })
 }
 
-pub fn greedily_matches(maybe_pattern: Option<&str>) -> Result<Option<&str>, Option<&str>> {
+pub fn greedily_matches(
+  maybe_pattern: Option<&str>,
+) -> Result<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>, Option<&str>> {
   lazy_static! {
     static ref RE: Regex = Regex::new(r"^\.(?P<prop>[[:word:]]+)$").unwrap();
   }
@@ -23,7 +25,7 @@ pub fn greedily_matches(maybe_pattern: Option<&str>) -> Result<Option<&str>, Opt
 
   match maybe_pattern {
     Some(pattern) => match match_prop(pattern) {
-      Some(prop_value) => Ok(None),
+      Some(prop_value) => Ok(prop(String::from(prop_value))),
       None => Err(maybe_pattern),
     },
     None => Err(maybe_pattern),
@@ -37,12 +39,28 @@ mod tests {
 
   #[test]
   fn should_match_prop() {
-    assert_eq!(greedily_matches(Some(".id")), Ok(None));
+    let res = greedily_matches(Some(".name"));
+    assert!(res.is_ok());
+
+    let ref data = object! {
+        "name"    => "John Doe",
+        "age"     => 30
+    };
+
+    match res {
+      Ok(matcher) => assert_eq!(matcher(Some(data)), Some(&data["name"])),
+      _ => panic!("Invalid result"),
+    }
   }
 
   #[test]
   fn shouldnt_match_identity() {
-    assert_eq!(greedily_matches(Some(".")), Err(Some(".")));
+    let res = greedily_matches(Some("."));
+    assert!(res.is_err());
+    match res {
+      Err(Some(selector)) => assert_eq!(selector, "."),
+      _ => panic!("Invalid result"),
+    }
   }
 
   #[test]
