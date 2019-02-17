@@ -12,18 +12,23 @@ mod input;
 mod selection;
 
 fn match_line(
-    matcher: &Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
+    matchers: &Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
     line: Result<String, Error>,
 ) {
     let input = line.expect("Could not read line from standard in");
     let json_input = json::parse(&input);
     if json_input.is_ok() {
-        match_json(matcher, json_input.unwrap())
+        match_json(matchers, json_input.unwrap())
     }
 }
 
-fn match_json(matcher: &Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>, json_input: JsonValue) {
-    if matcher(Some(&json_input)).is_some() {
+fn match_json(
+    matchers: &Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
+    json_input: JsonValue,
+) {
+    if matchers.iter().fold(true, |matches, matcher| {
+        matches && matcher(Some(&json_input)).is_some()
+    }) {
         println!("{}", json::stringify(json_input))
     }
 }

@@ -2,8 +2,9 @@ use json::*;
 mod identity;
 mod prop;
 
-pub fn match_filters(filter: &str) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
-  match identity::greedily_matches(Some(filter)) {
+pub fn match_filters(filter: &str) -> Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>> {
+  let mut matchers: Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>> = vec![];
+  matchers.push(match identity::greedily_matches(Some(filter)) {
     Ok((matcher, _)) => matcher,
     Err(unmatched_filter) => match prop::greedily_matches(unmatched_filter) {
       Ok((matcher, _)) => matcher,
@@ -11,5 +12,6 @@ pub fn match_filters(filter: &str) -> Box<Fn(Option<&JsonValue>) -> Option<&Json
         panic!("Invalid filter: {:?}", unmatched_filter);
       }
     },
-  }
+  });
+  matchers
 }
