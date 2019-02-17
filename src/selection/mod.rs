@@ -3,11 +3,13 @@ mod identity;
 mod prop;
 
 pub fn match_filters(filter: &str) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
-  let selection_matches = identity::greedily_matches(Some(filter));
-  match selection_matches {
+  match identity::greedily_matches(Some(filter)) {
     Ok(matcher) => matcher,
-    Err(unmatched_filter) => {
-      panic!("Invalid filter: {:?}", unmatched_filter);
-    }
+    Err(unmatched_filter) => match prop::greedily_matches(unmatched_filter) {
+      Ok(matcher) => matcher,
+      Err(unmatched_filter) => {
+        panic!("Invalid filter: {:?}", unmatched_filter);
+      }
+    },
   }
 }

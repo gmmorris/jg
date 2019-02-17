@@ -38,12 +38,12 @@ mod cli {
     fn should_not_match_all_when_selector_is_not_identity() {
         let mut cmd = Command::main_binary().unwrap();
 
-        cmd.arg(".prop");
+        cmd.arg("..");
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer("{}\n");
 
         assert_cmd.assert().failure().stderr(
-            predicate::str::is_match(".*'Invalid filter: Some\\(\"\\.prop\"\\)'.*").unwrap(),
+            predicate::str::is_match(".*'Invalid filter: Some\\(\"\\.\\.\"\\)'.*").unwrap(),
         );
     }
 }
