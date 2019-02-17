@@ -13,19 +13,31 @@ pub fn prop(prop_value: String) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonVal
 
 pub fn greedily_matches(
   maybe_pattern: Option<&str>,
-) -> Result<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>, Option<&str>> {
+) -> Result<
+  (
+    Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
+    Option<&str>,
+  ),
+  Option<&str>,
+> {
   lazy_static! {
-    static ref RE: Regex = Regex::new(r"^\.(?P<prop>[[:word:]]+)$").unwrap();
+    static ref RE: Regex = Regex::new(r"^\.(?P<prop>[[:word:]]+)(?P<remainder>.*)$").unwrap();
   }
 
-  fn match_prop(pattern: &str) -> Option<&str> {
-    RE.captures(pattern)
-      .and_then(|cap| cap.name("prop").map(|prop| prop.as_str()))
+  fn match_prop(pattern: &str) -> Option<(&str, Option<&str>)> {
+    RE.captures(pattern).and_then(|cap| {
+      cap.name("prop").map(|prop| {
+        (
+          prop.as_str(),
+          cap.name("remainder").map(|remainder| remainder.as_str()),
+        )
+      })
+    })
   }
 
   match maybe_pattern {
     Some(pattern) => match match_prop(pattern) {
-      Some(prop_value) => Ok(prop(String::from(prop_value))),
+      Some((prop_value, remainder)) => Ok((prop(String::from(prop_value)), remainder)),
       None => Err(maybe_pattern),
     },
     None => Err(maybe_pattern),
@@ -48,7 +60,7 @@ mod tests {
     };
 
     match res {
-      Ok(matcher) => assert_eq!(matcher(Some(data)), Some(&data["name"])),
+      Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["name"])),
       _ => panic!("Invalid result"),
     }
   }
@@ -59,6 +71,25 @@ mod tests {
     assert!(res.is_err());
     match res {
       Err(Some(selector)) => assert_eq!(selector, "."),
+      _ => panic!("Invalid result"),
+    }
+  }
+
+  #[test]
+  fn should_return_remainder_when_it_matches_prop() {
+    let res = greedily_matches(Some(".father.title"));
+    assert!(res.is_ok());
+
+    let ref data = object! {
+        "name"    => "John Doe",
+        "age"     => 30,
+        "job"     => object! {
+          "title"    => "Unknown"
+      }
+    };
+
+    match res {
+      Ok((_, umatched)) => assert_eq!(umatched, Some(".title")),
       _ => panic!("Invalid result"),
     }
   }

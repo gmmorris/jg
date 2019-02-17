@@ -6,10 +6,16 @@ pub fn identity() -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
 
 pub fn greedily_matches(
   maybe_pattern: Option<&str>,
-) -> Result<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>, Option<&str>> {
+) -> Result<
+  (
+    Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
+    Option<&str>,
+  ),
+  Option<&str>,
+> {
   match maybe_pattern {
     Some(pattern) => match pattern {
-      "." => Ok(identity()),
+      "." => Ok((identity(), None)),
       _ => Err(maybe_pattern),
     },
     None => Err(maybe_pattern),
@@ -32,7 +38,10 @@ mod tests {
     };
 
     match res {
-      Ok(matcher) => assert_eq!(matcher(Some(data)), Some(data)),
+      Ok((matcher, unmatched)) => {
+        assert_eq!(matcher(Some(data)), Some(data));
+        assert_eq!(unmatched, None);
+      }
       _ => panic!("Invalid result"),
     }
   }
