@@ -26,21 +26,13 @@ fn match_json(
     matchers: &Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
     json_input: JsonValue,
 ) {
-    let (matches_all, _) = matchers.iter().fold(
-        (true, Some(&json_input)),
-        |(matches, json_slice), matcher| {
-            if matches {
-                match matcher(json_slice) {
-                    Some(next_slice) => (true, Some(next_slice)),
-                    None => (false, None),
-                }
-            } else {
-                (false, None)
-            }
-        },
-    );
-    if matches_all {
-        println!("{}", json::stringify(json_input))
+    let matches = matchers
+        .iter()
+        .try_fold(&json_input, |json_slice, matcher| {
+            matcher(Some(&json_slice))
+        });
+    if matches.is_some() {
+        println!("{}", json::stringify(json_input));
     }
 }
 
