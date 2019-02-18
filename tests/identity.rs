@@ -42,8 +42,9 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer("{}\n");
 
-        assert_cmd.assert().failure().stderr(
-            predicate::str::is_match(".*'Invalid filter: Some\\(\"\\.\\.\"\\)'.*").unwrap(),
-        );
+        assert_cmd
+            .assert()
+            .failure()
+            .stderr(predicate::str::is_match(".*'Invalid filter: \"\\.\\.\"'.*").unwrap());
     }
 }
