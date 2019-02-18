@@ -21,7 +21,7 @@ pub fn greedily_matches(
   Option<&str>,
 > {
   lazy_static! {
-    static ref RE: Regex = Regex::new(r"^\.(?P<prop>[[:word:]]+)(?P<remainder>.*)$").unwrap();
+    static ref RE: Regex = Regex::new(r"^\.(?P<prop>[[:word:]]+)(?P<remainder>.+)?$").unwrap();
   }
 
   fn match_prop(pattern: &str) -> Option<(&str, Option<&str>)> {

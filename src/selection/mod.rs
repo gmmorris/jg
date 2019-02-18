@@ -27,17 +27,7 @@ pub fn match_filters(filter: &str) -> Vec<Box<Fn(Option<&JsonValue>) -> Option<&
     match match_filter(filter) {
       Ok((matcher, remainder)) => {
         matchers.push(matcher);
-        match remainder {
-          None => {
-            unmatched_filter = Ok(None);
-          }
-          Some("") => {
-            unmatched_filter = Ok(None);
-          }
-          Some(_) => {
-            unmatched_filter = Ok(remainder);
-          }
-        }
+        unmatched_filter = Ok(remainder);
       }
       Err(unmatched_filter) => {
         panic!("Invalid filter: {:?}", unmatched_filter);
