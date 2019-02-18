@@ -18,21 +18,24 @@ fn match_line(
     let input = line.expect("Could not read line from standard in");
     let json_input = json::parse(&input);
     if json_input.is_ok() {
-        match_json(matchers, json_input.unwrap())
+        let json_input = json_input.unwrap();
+        if let Some(json_input) = match_json(matchers, json_input) {
+            println!("{}", json::stringify(json_input));
+        }
     }
 }
 
 fn match_json(
     matchers: &Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
     json_input: JsonValue,
-) {
-    let matches = matchers
+) -> Option<JsonValue> {
+    match matchers
         .iter()
         .try_fold(&json_input, |json_slice, matcher| {
             matcher(Some(&json_slice))
-        });
-    if matches.is_some() {
-        println!("{}", json::stringify(json_input));
+        }) {
+        Some(_) => Some(json_input),
+        None => None,
     }
 }
 
