@@ -19,23 +19,34 @@ fn match_line(
     let json_input = json::parse(&input);
     if json_input.is_ok() {
         let json_input = json_input.unwrap();
-        if let Some(json_input) = match_json(matchers, json_input) {
+        if match_json_slice(matchers, &json_input).is_ok() {
             println!("{}", json::stringify(json_input));
         }
     }
 }
 
-fn match_json(
+fn match_json_slice(
     matchers: &Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
-    json_input: JsonValue,
-) -> Option<JsonValue> {
-    match matchers
-        .iter()
-        .try_fold(&json_input, |json_slice, matcher| {
-            matcher(Some(&json_slice))
-        }) {
-        Some(_) => Some(json_input),
-        None => None,
+    json_input: &JsonValue,
+) -> Result<(), ()> {
+    match json_input {
+        JsonValue::Object(_) => match matchers
+            .iter()
+            .try_fold(json_input, |json_slice, matcher| matcher(Some(&json_slice)))
+        {
+            Some(_) => Ok(()),
+            None => match json_input {
+                JsonValue::Object(ref object) => match object
+                    .iter()
+                    .find(|(_, value)| match_json_slice(matchers, *value).is_ok())
+                {
+                    Some(_) => Ok(()),
+                    None => Err(()),
+                },
+                _ => Err(()),
+            },
+        },
+        _ => Err(()),
     }
 }
 
