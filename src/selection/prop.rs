@@ -24,15 +24,7 @@ pub fn prop(
   })
 }
 
-pub fn greedily_matches(
-  maybe_pattern: Option<&str>,
-) -> Result<
-  (
-    Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
-    Option<&str>,
-  ),
-  Option<&str>,
-> {
+fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValue>, Option<&str>)> {
   lazy_static! {
     static ref re_prop: Regex =
       Regex::new(r#"^\.(?P<prop>([[:word:]])+)(?P<remainder>.+)?$"#).unwrap();
@@ -42,24 +34,32 @@ pub fn greedily_matches(
     .unwrap();
   }
 
-  fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValue>, Option<&str>)> {
-    match re_prop
-      .captures(pattern)
-      .or(re_index_prop.captures(pattern))
-    {
-      Some(cap) => cap.name("prop").map(|prop| {
-        (
-          prop.as_str(),
-          cap
-            .name("stringValue")
-            .map(|value| JsonValue::String(String::from(value.as_str()))),
-          cap.name("remainder").map(|remainder| remainder.as_str()),
-        )
-      }),
-      None => None,
-    }
+  match re_prop
+    .captures(pattern)
+    .or(re_index_prop.captures(pattern))
+  {
+    Some(cap) => cap.name("prop").map(|prop| {
+      (
+        prop.as_str(),
+        cap
+          .name("stringValue")
+          .map(|value| JsonValue::String(String::from(value.as_str()))),
+        cap.name("remainder").map(|remainder| remainder.as_str()),
+      )
+    }),
+    None => None,
   }
+}
 
+pub fn greedily_matches(
+  maybe_pattern: Option<&str>,
+) -> Result<
+  (
+    Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
+    Option<&str>,
+  ),
+  Option<&str>,
+> {
   match maybe_pattern {
     Some(pattern) => match match_prop(pattern) {
       Some((prop_name, prop_value, remainder)) => {
