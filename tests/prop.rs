@@ -85,4 +85,22 @@ mod cli {
             "{\"name\":\"inigo montoya\"}\n{\"name\":\"blanco white\"}\n",
         );
     }
+
+    #[test]
+    fn should_match_json_porperty_using_dictionary_index_selector() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#".["name"]"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{ \"name\":\"inigo montoya\" }
+{\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
+{ \"name\":\"blanco white\" }\n",
+        );
+
+        assert_cmd.assert().success().stdout(
+            "{\"name\":\"inigo montoya\"}
+{\"name\":\"blanco white\"}\n",
+        );
+    }
 }

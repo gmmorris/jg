@@ -21,12 +21,15 @@ pub fn greedily_matches(
   Option<&str>,
 > {
   lazy_static! {
-    static ref RE: Regex = Regex::new(r"^\.(?P<prop>[[:word:]]+)(?P<remainder>.+)?$").unwrap();
+    static ref RE: Regex = Regex::new(
+      r#"^\.((?P<prop>([[:word:]])+)|\["(?P<indexProp>([[:word:]])+)"\])(?P<remainder>.+)?$"#
+    )
+    .unwrap();
   }
 
   fn match_prop(pattern: &str) -> Option<(&str, Option<&str>)> {
     RE.captures(pattern).and_then(|cap| {
-      cap.name("prop").map(|prop| {
+      cap.name("prop").or(cap.name("indexProp")).map(|prop| {
         (
           prop.as_str(),
           cap.name("remainder").map(|remainder| remainder.as_str()),
