@@ -34,24 +34,36 @@ pub fn greedily_matches(
   Option<&str>,
 > {
   lazy_static! {
-    static ref RE: Regex = Regex::new(
-      r#"^\.((?P<prop>([[:word:]])+)|\{"(?P<indexProp>([[:word:]])+)"(:"(?P<stringValue>([^"])+)")?\})(?P<remainder>.+)?$"#
+    static ref re_prop: Regex =
+      Regex::new(r#"^\.(?P<prop>([[:word:]])+)(?P<remainder>.+)?$"#).unwrap();
+    static ref re_index_prop: Regex = Regex::new(
+      r#"^\{"(?P<indexProp>([[:word:]])+)"(:"(?P<stringValue>([^"])+)")?\}(?P<remainder>.+)?$"#
     )
     .unwrap();
   }
 
   fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValue>, Option<&str>)> {
-    RE.captures(pattern).and_then(|cap| {
-      cap.name("prop").or(cap.name("indexProp")).map(|prop| {
+    match re_prop.captures(pattern) {
+      None => match re_index_prop.captures(pattern) {
+        Some(cap) => cap.name("indexProp").map(|prop| {
+          (
+            prop.as_str(),
+            cap
+              .name("stringValue")
+              .map(|value| JsonValue::String(String::from(value.as_str()))),
+            cap.name("remainder").map(|remainder| remainder.as_str()),
+          )
+        }),
+        None => None,
+      },
+      Some(cap) => cap.name("prop").map(|prop| {
         (
           prop.as_str(),
-          cap
-            .name("stringValue")
-            .map(|value| JsonValue::String(String::from(value.as_str()))),
+          None,
           cap.name("remainder").map(|remainder| remainder.as_str()),
         )
-      })
-    })
+      }),
+    }
   }
 
   match maybe_pattern {
@@ -100,14 +112,6 @@ mod tests {
   fn should_return_remainder_when_it_matches_prop() {
     let res = greedily_matches(Some(".father.title"));
     assert!(res.is_ok());
-
-    let ref data = object! {
-        "name"    => "John Doe",
-        "age"     => 30,
-        "job"     => object! {
-          "title"    => "Unknown"
-      }
-    };
 
     match res {
       Ok((_, umatched)) => assert_eq!(umatched, Some(".title")),
