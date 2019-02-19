@@ -5,23 +5,25 @@ use std::io::{self, BufRead, BufReader, Error};
 use std::result::Result;
 use std::string::String;
 
-pub fn print_input(
+pub fn match_input(
+  input_file: Option<&str>,
   filters: Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
   match_line: &Fn(&Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>, Result<String, Error>),
 ) {
   let stdin = io::stdin();
-  for line in stdin.lock().lines() {
+  let input = match input_file {
+    Some(input) => buffer_input_file(input),
+    None => Box::new(stdin.lock()) as Box<BufRead>,
+  };
+
+  for line in input.lines() {
     match_line(&filters, line)
   }
 }
 
-pub fn print_input_file(
-  filters: Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
-  input: &str,
-  match_line: &Fn(&Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>, Result<String, Error>),
-) {
-  let file = match File::open(input) {
-    Ok(contents) => contents,
+fn buffer_input_file(input: &str) -> Box<BufRead> {
+  match File::open(input) {
+    Ok(contents) => Box::new(BufReader::new(contents)),
     Err(error) => match error.kind() {
       ErrorKind::NotFound => panic!("The specified input file could not be found: {:?}", input),
       other_error => panic!(
@@ -29,8 +31,5 @@ pub fn print_input_file(
         input, other_error
       ),
     },
-  };
-  for line in BufReader::new(file).lines() {
-    match_line(&filters, line)
   }
 }

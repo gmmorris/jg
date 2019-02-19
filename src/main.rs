@@ -86,10 +86,9 @@ fn main() {
         verbose(filter);
     }
 
-    let matchers = selection::match_filters(filter);
-    if let Some(in_file) = matches.value_of("input") {
-        input::print_input_file(matchers, in_file, &match_line);
-    } else {
-        input::print_input(matchers, &match_line);
-    }
+    input::match_input(
+        matches.value_of("input"),
+        selection::match_filters(filter),
+        &match_line,
+    );
 }
