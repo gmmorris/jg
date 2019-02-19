@@ -37,32 +37,26 @@ pub fn greedily_matches(
     static ref re_prop: Regex =
       Regex::new(r#"^\.(?P<prop>([[:word:]])+)(?P<remainder>.+)?$"#).unwrap();
     static ref re_index_prop: Regex = Regex::new(
-      r#"^\{"(?P<indexProp>([[:word:]])+)"(:"(?P<stringValue>([^"])+)")?\}(?P<remainder>.+)?$"#
+      r#"^\{"(?P<prop>([[:word:]])+)"(:"(?P<stringValue>([^"])+)")?\}(?P<remainder>.+)?$"#
     )
     .unwrap();
   }
 
   fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValue>, Option<&str>)> {
-    match re_prop.captures(pattern) {
-      None => match re_index_prop.captures(pattern) {
-        Some(cap) => cap.name("indexProp").map(|prop| {
-          (
-            prop.as_str(),
-            cap
-              .name("stringValue")
-              .map(|value| JsonValue::String(String::from(value.as_str()))),
-            cap.name("remainder").map(|remainder| remainder.as_str()),
-          )
-        }),
-        None => None,
-      },
+    match re_prop
+      .captures(pattern)
+      .or(re_index_prop.captures(pattern))
+    {
       Some(cap) => cap.name("prop").map(|prop| {
         (
           prop.as_str(),
-          None,
+          cap
+            .name("stringValue")
+            .map(|value| JsonValue::String(String::from(value.as_str()))),
           cap.name("remainder").map(|remainder| remainder.as_str()),
         )
       }),
+      None => None,
     }
   }
 
