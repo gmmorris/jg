@@ -1,10 +1,23 @@
 use json::JsonValue;
 use regex::Regex;
 
-pub fn prop(prop_value: String) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
+pub fn prop(
+  prop_name: String,
+  prop_value: Option<JsonValue>,
+) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
   Box::new(move |input: Option<&JsonValue>| match input {
     Some(json) => match json {
-      JsonValue::Object(ref object) => object.get(&prop_value),
+      JsonValue::Object(ref object) => match (object.get(&prop_name), &prop_value) {
+        (Some(prop), Some(prop_value)) => {
+          if prop.eq(prop_value) {
+            Some(prop)
+          } else {
+            None
+          }
+        }
+        (Some(prop), None) => Some(prop),
+        (_, _) => None,
+      },
       _ => None,
     },
     None => None,
@@ -22,16 +35,19 @@ pub fn greedily_matches(
 > {
   lazy_static! {
     static ref RE: Regex = Regex::new(
-      r#"^\.((?P<prop>([[:word:]])+)|\["(?P<indexProp>([[:word:]])+)"\])(?P<remainder>.+)?$"#
+      r#"^\.((?P<prop>([[:word:]])+)|\["(?P<indexProp>([[:word:]])+)"(:"(?P<stringValue>([^"])+)")?\])(?P<remainder>.+)?$"#
     )
     .unwrap();
   }
 
-  fn match_prop(pattern: &str) -> Option<(&str, Option<&str>)> {
+  fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValue>, Option<&str>)> {
     RE.captures(pattern).and_then(|cap| {
       cap.name("prop").or(cap.name("indexProp")).map(|prop| {
         (
           prop.as_str(),
+          cap
+            .name("stringValue")
+            .map(|value| JsonValue::String(String::from(value.as_str()))),
           cap.name("remainder").map(|remainder| remainder.as_str()),
         )
       })
@@ -40,7 +56,9 @@ pub fn greedily_matches(
 
   match maybe_pattern {
     Some(pattern) => match match_prop(pattern) {
-      Some((prop_value, remainder)) => Ok((prop(String::from(prop_value)), remainder)),
+      Some((prop_name, prop_value, remainder)) => {
+        Ok((prop(String::from(prop_name), prop_value), remainder))
+      }
       None => Err(maybe_pattern),
     },
     None => Err(maybe_pattern),
@@ -99,7 +117,7 @@ mod tests {
 
   #[test]
   fn should_return_none_when_json_isnt_present() {
-    assert_eq!(prop(String::from(".id"))(None), None);
+    assert_eq!(prop(String::from(".id"), None)(None), None);
   }
 
   #[test]
@@ -109,6 +127,9 @@ mod tests {
         "age"     => 30
     };
 
-    assert_eq!(prop(String::from("name"))(Some(data)), Some(&data["name"]));
+    assert_eq!(
+      prop(String::from("name"), None)(Some(data)),
+      Some(&data["name"])
+    );
   }
 }
