@@ -71,7 +71,7 @@ mod cli {
     fn should_match_json_porperty_using_dictionary_index_selector() {
         let mut cmd = Command::main_binary().unwrap();
 
-        cmd.arg(r#".["name"]"#);
+        cmd.arg(r#".{"name"}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
             "{ \"name\":\"inigo montoya\" }
@@ -89,7 +89,7 @@ mod cli {
     fn should_match_json_porperty_and_value_using_dictionary_index_selector() {
         let mut cmd = Command::main_binary().unwrap();
 
-        cmd.arg(r#".["name":"blanco white"]"#);
+        cmd.arg(r#".{"name":"blanco white"}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
             "{ \"name\":\"inigo montoya\" }
@@ -101,12 +101,12 @@ mod cli {
             "{\"name\":\"blanco white\"}\n",
         );
     }
-    
+
     #[test]
     fn should_match_json_with_inner_matching_props() {
         let mut cmd = Command::main_binary().unwrap();
 
-        cmd.arg(r#".job.["title":"Unknown"]"#);
+        cmd.arg(r#".job.{"title":"Unknown"}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
             "{\"name\":\"John Doe\",\"job\":{\"title\":\"Unknown\"}}

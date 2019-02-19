@@ -35,7 +35,7 @@ pub fn greedily_matches(
 > {
   lazy_static! {
     static ref RE: Regex = Regex::new(
-      r#"^\.((?P<prop>([[:word:]])+)|\["(?P<indexProp>([[:word:]])+)"(:"(?P<stringValue>([^"])+)")?\])(?P<remainder>.+)?$"#
+      r#"^\.((?P<prop>([[:word:]])+)|\{"(?P<indexProp>([[:word:]])+)"(:"(?P<stringValue>([^"])+)")?\})(?P<remainder>.+)?$"#
     )
     .unwrap();
   }
