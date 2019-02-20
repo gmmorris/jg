@@ -24,6 +24,31 @@ pub fn match_filter(
   }
 }
 
+pub fn match_json_slice(
+  matchers: &Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
+  json_input: &JsonValue,
+) -> Result<(), ()> {
+  match json_input {
+    JsonValue::Object(_) | JsonValue::Array(_) => match matchers
+      .iter()
+      .try_fold(json_input, |json_slice, matcher| matcher(Some(&json_slice)))
+    {
+      Some(_) => Ok(()),
+      None => match json_input {
+        JsonValue::Object(ref object) => match object
+          .iter()
+          .find(|(_, value)| match_json_slice(matchers, *value).is_ok())
+        {
+          Some(_) => Ok(()),
+          None => Err(()),
+        },
+        _ => Err(()),
+      },
+    },
+    _ => Err(()),
+  }
+}
+
 pub fn match_filters(filter: &str) -> Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>> {
   let mut matchers: Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>> = vec![];
   let mut unmatched_filter: Result<Option<&str>, &str> = Ok(Some(filter));

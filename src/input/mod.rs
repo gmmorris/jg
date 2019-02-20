@@ -5,6 +5,8 @@ use std::io::{self, BufRead, BufReader, Error};
 use std::result::Result;
 use std::string::String;
 
+use crate::selection::match_json_slice;
+
 pub fn match_input(
   input_file: Option<&str>,
   filters: Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
@@ -31,5 +33,19 @@ fn buffer_input_file(input: &str) -> Box<BufRead> {
         input, other_error
       ),
     },
+  }
+}
+
+pub fn match_line(
+  matchers: &Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
+  line: Result<String, Error>,
+) {
+  let input = line.expect("Could not read line from standard in");
+  let json_input = json::parse(&input);
+  if json_input.is_ok() {
+    let json_input = json_input.unwrap();
+    if match_json_slice(matchers, &json_input).is_ok() {
+      println!("{}", json::stringify(json_input));
+    }
   }
 }
