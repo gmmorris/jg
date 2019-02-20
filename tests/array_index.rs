@@ -28,7 +28,7 @@ mod cli {
 
         assert_cmd.assert().success().stdout("[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]\n");
     }
-
+ 
     #[test]
     fn should_not_match_array_with_outofbounds_index() {
         let mut cmd = Command::main_binary().unwrap();
