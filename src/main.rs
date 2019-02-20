@@ -30,7 +30,7 @@ fn match_json_slice(
     json_input: &JsonValue,
 ) -> Result<(), ()> {
     match json_input {
-        JsonValue::Object(_) => match matchers
+        JsonValue::Object(_) | JsonValue::Array(_) => match matchers
             .iter()
             .try_fold(json_input, |json_slice, matcher| matcher(Some(&json_slice)))
         {
