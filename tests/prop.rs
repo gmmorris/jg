@@ -14,7 +14,10 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer("{\"name\":\"inigo montoya\"}\n");
 
-        assert_cmd.assert().success().stdout("{\"name\":\"inigo montoya\"}\n");
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"name\":\"inigo montoya\"}\n");
     }
 
     #[test]
@@ -28,9 +31,10 @@ mod cli {
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}\n",
         );
 
-        assert_cmd.assert().success().stdout(
-            "{\"name\":\"inigo montoya\"}\n",
-        );
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"name\":\"inigo montoya\"}\n");
     }
 
     #[test]
@@ -45,9 +49,10 @@ mod cli {
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}\n",
         );
 
-        assert_cmd.assert().success().stdout(
-            "{\"name\":\"John Doe\",\"job\":{\"title\":\"Unknown\"}}\n",
-        );
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"name\":\"John Doe\",\"job\":{\"title\":\"Unknown\"}}\n");
     }
 
     #[test]
@@ -62,9 +67,10 @@ mod cli {
 { \"name\":\"blanco white\" }\n",
         );
 
-        assert_cmd.assert().success().stdout(
-            "{\"name\":\"inigo montoya\"}\n{\"name\":\"blanco white\"}\n",
-        );
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"name\":\"inigo montoya\"}\n{\"name\":\"blanco white\"}\n");
     }
 
     #[test]
@@ -97,27 +103,28 @@ mod cli {
 { \"name\":\"blanco white\" }\n",
         );
 
-        assert_cmd.assert().success().stdout(
-            "{\"name\":\"blanco white\"}\n",
-        );
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"name\":\"blanco white\"}\n");
     }
 
     #[test]
     fn should_match_json_with_inner_matching_props() {
         let mut cmd = Command::main_binary().unwrap();
 
-        cmd.arg(r#".job{"title":"Unknown"}"#);
+        cmd.arg(r#".job{"title":"Unknown-title"}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"John Doe\",\"job\":{\"title\":\"Unknown\"}}
+            "{\"name\":\"John Doe\",\"job\":{\"title\":\"Unknown-title\"}}
 {\"name\":\"John Doe\",\"title\":\"mr\"}
-{\"name\":\"John Doe\",\"self\":{\"name\":\"John Doe\",\"job\":{\"title\":\"Unknown\"}}}
+{\"name\":\"John Doe\",\"self\":{\"name\":\"John Doe\",\"job\":{\"title\":\"Unknown-title\"}}}
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}\n",
         );
 
         assert_cmd.assert().success().stdout(
-            "{\"name\":\"John Doe\",\"job\":{\"title\":\"Unknown\"}}
-{\"name\":\"John Doe\",\"self\":{\"name\":\"John Doe\",\"job\":{\"title\":\"Unknown\"}}}\n",
+            "{\"name\":\"John Doe\",\"job\":{\"title\":\"Unknown-title\"}}
+{\"name\":\"John Doe\",\"self\":{\"name\":\"John Doe\",\"job\":{\"title\":\"Unknown-title\"}}}\n",
         );
     }
 }

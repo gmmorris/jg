@@ -2,27 +2,7 @@ use json::JsonValue;
 mod array_index;
 mod identity;
 mod prop;
-
-pub fn match_filter(
-  filter: &str,
-) -> Result<
-  (
-    Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
-    Option<&str>,
-  ),
-  &str,
-> {
-  match identity::greedily_matches(Some(filter)) {
-    Ok((matcher, remainder)) => Ok((matcher, remainder)),
-    Err(unmatched_filter) => match prop::greedily_matches(unmatched_filter) {
-      Ok((matcher, remainder)) => Ok((matcher, remainder)),
-      Err(unmatched_filter) => match array_index::greedily_matches(unmatched_filter) {
-        Ok((matcher, remainder)) => Ok((matcher, remainder)),
-        Err(_) => Err(filter),
-      },
-    },
-  }
-}
+mod sequence;
 
 pub fn match_json_slice(
   matchers: &Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
@@ -49,7 +29,33 @@ pub fn match_json_slice(
   }
 }
 
-pub fn match_filters(filter: &str) -> Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>> {
+pub fn match_filter(
+  filter: &str,
+) -> Result<
+  (
+    Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
+    Option<&str>,
+  ),
+  &str,
+> {
+  match identity::greedily_matches(Some(filter)) {
+    Ok((matcher, remainder)) => Ok((matcher, remainder)),
+    Err(unmatched_filter) => match prop::greedily_matches(unmatched_filter) {
+      Ok((matcher, remainder)) => Ok((matcher, remainder)),
+      Err(unmatched_filter) => match array_index::greedily_matches(unmatched_filter) {
+        Ok((matcher, remainder)) => Ok((matcher, remainder)),
+        Err(unmatched_filter) => match sequence::greedily_matches(unmatched_filter) {
+          Ok((matcher, remainder)) => Ok((matcher, remainder)),
+          Err(_) => Err(filter),
+        },
+      },
+    },
+  }
+}
+
+pub fn try_to_match_filters(
+  filter: &str,
+) -> Result<Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>, &str> {
   let mut matchers: Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>> = vec![];
   let mut unmatched_filter: Result<Option<&str>, &str> = Ok(Some(filter));
   while let Ok(Some(filter)) = unmatched_filter {
@@ -58,10 +64,23 @@ pub fn match_filters(filter: &str) -> Vec<Box<Fn(Option<&JsonValue>) -> Option<&
         matchers.push(matcher);
         unmatched_filter = Ok(remainder);
       }
-      Err(unmatched_filter) => {
-        panic!("Invalid filter: {:?}", unmatched_filter);
+      Err(remaining_filter) => {
+        unmatched_filter = Err(remaining_filter);
       }
     };
   }
-  matchers
+  match unmatched_filter {
+    Ok(None) => Ok(matchers),
+    Ok(Some(remaining_filter)) => Err(remaining_filter),
+    Err(remaining_filter) => Err(remaining_filter),
+  }
+}
+
+pub fn match_filters(filter: &str) -> Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>> {
+  match try_to_match_filters(filter) {
+    Ok(matchers) => matchers,
+    Err(unmatched_filter) => {
+      panic!("Invalid filter: {:?}", unmatched_filter);
+    }
+  }
 }
