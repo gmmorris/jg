@@ -11,7 +11,11 @@ pub fn array_index(index: usize) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonVa
   })
 }
 
-fn match_array_index(pattern: &str) -> Option<(usize, Option<&str>)> {
+enum ArrayMember {
+  Index(usize),
+}
+
+fn match_array_index(pattern: &str) -> Option<(ArrayMember, Option<&str>)> {
   lazy_static! {
     static ref re_prop: Regex =
       Regex::new(r#"^\[(?P<index>([[:digit:]])+)\](?P<remainder>.+)?$"#).unwrap();
@@ -25,7 +29,7 @@ fn match_array_index(pattern: &str) -> Option<(usize, Option<&str>)> {
       .filter(|index| index.is_ok())
       .map(|index| {
         (
-          index.unwrap(),
+          ArrayMember::Index(index.unwrap()),
           cap.name("remainder").map(|remainder| remainder.as_str()),
         )
       })
@@ -43,7 +47,7 @@ pub fn greedily_matches(
 > {
   match maybe_pattern {
     Some(pattern) => match match_array_index(pattern) {
-      Some((index, remainder)) => Ok((array_index(index), remainder)),
+      Some((ArrayMember::Index(index), remainder)) => Ok((array_index(index), remainder)),
       None => Err(maybe_pattern),
     },
     None => Err(maybe_pattern),

@@ -1,5 +1,5 @@
 use json::JsonValue;
-mod array_index;
+mod array_member;
 mod identity;
 mod prop;
 mod sequence;
@@ -42,7 +42,7 @@ pub fn match_filter(
     Ok((matcher, remainder)) => Ok((matcher, remainder)),
     Err(unmatched_filter) => match prop::greedily_matches(unmatched_filter) {
       Ok((matcher, remainder)) => Ok((matcher, remainder)),
-      Err(unmatched_filter) => match array_index::greedily_matches(unmatched_filter) {
+      Err(unmatched_filter) => match array_member::greedily_matches(unmatched_filter) {
         Ok((matcher, remainder)) => Ok((matcher, remainder)),
         Err(unmatched_filter) => match sequence::greedily_matches(unmatched_filter) {
           Ok((matcher, remainder)) => Ok((matcher, remainder)),
