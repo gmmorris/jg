@@ -20,7 +20,11 @@ pub fn prop(
           (JsonValue::Number(number_prop), Some(JsonValueMatcher::Number(prop_value))) => {
             Some(prop).filter(|_| number_prop.eq(prop_value))
           }
-          (json_value, Some(filter)) => None,
+          (JsonValue::Boolean(bool_prop), Some(JsonValueMatcher::Boolean(prop_value))) => {
+            Some(prop).filter(|_| bool_prop.eq(prop_value))
+          }
+          (JsonValue::Null, Some(JsonValueMatcher::Null)) => Some(prop),
+          (_, Some(_)) => None,
           (_, None) => Some(prop),
         },
         None => None,
@@ -46,7 +50,14 @@ fn identify_value_matcher(cap: &regex::Captures) -> Result<Option<JsonValueMatch
         Err(_) => Err(()),
       });
 
-  match string_matcher.or(number_matcher) {
+  let literal_matcher = cap.name("literalValue").map(|value| match value.as_str() {
+    "true" => Ok(JsonValueMatcher::Boolean(true)),
+    "false" => Ok(JsonValueMatcher::Boolean(false)),
+    "null" => Ok(JsonValueMatcher::Null),
+    _ => Err(()),
+  });
+
+  match string_matcher.or(number_matcher).or(literal_matcher) {
     Some(Ok(json_value_matcher)) => Ok(Some(json_value_matcher)),
     Some(Err(_)) => Err(()),
     None => Ok(None),
@@ -58,7 +69,7 @@ fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMatcher>, Option<&
     static ref re_prop: Regex =
       Regex::new(r#"^\.(?P<prop>([[:word:]])+)(?P<remainder>.+)?$"#).unwrap();
     static ref re_prop_value: Regex = Regex::new(
-      r#"^\{"(?P<prop>([[:word:]])+)"(:("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)))?\}(?P<remainder>.+)?$"#
+      r#"^\{"(?P<prop>([[:word:]])+)"(:("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+)))?\}(?P<remainder>.+)?$"#
     )
     .unwrap();
   }
@@ -173,6 +184,57 @@ mod tests {
 
     match res {
       Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["age"])),
+      _ => panic!("Invalid result"),
+    }
+  }
+
+  #[test]
+  fn should_match_boolean_false_prop() {
+    let res = greedily_matches(Some(r#"{"is_known":false}"#));
+    assert!(res.is_ok());
+
+    let ref data = object! {
+        "name"      => "John Doe",
+        "age"       => 30,
+        "is_known"  => false
+    };
+
+    match res {
+      Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["is_known"])),
+      _ => panic!("Invalid result"),
+    }
+  }
+
+  #[test]
+  fn should_match_boolean_true_prop() {
+    let res = greedily_matches(Some(r#"{"is_anonymous":true}"#));
+    assert!(res.is_ok());
+
+    let ref data = object! {
+        "name"          => "John Doe",
+        "age"           => 30,
+        "is_anonymous"  => true
+    };
+
+    match res {
+      Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["is_anonymous"])),
+      _ => panic!("Invalid result"),
+    }
+  }
+
+  #[test]
+  fn should_match_null_prop() {
+    let res = greedily_matches(Some(r#"{"identity":null}"#));
+    assert!(res.is_ok());
+
+    let ref data = object! {
+        "name"          => "John Doe",
+        "age"           => 30,
+        "identity"      => JsonValue::Null
+    };
+
+    match res {
+      Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["identity"])),
       _ => panic!("Invalid result"),
     }
   }
