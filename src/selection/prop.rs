@@ -11,10 +11,10 @@ pub fn prop(
     Some(json) => match json {
       JsonValue::Object(ref object) => match object.get(&prop_name) {
         Some(prop) => match (prop, &prop_value) {
-          (JsonValue::String(string_prop), Some(JsonValueMatcher::ExactString(prop_value))) => {
+          (JsonValue::String(string_prop), Some(JsonValueMatcher::String(prop_value))) => {
             Some(prop).filter(|_| string_prop.eq(prop_value))
           }
-          (JsonValue::Short(string_prop), Some(JsonValueMatcher::ExactString(prop_value))) => {
+          (JsonValue::Short(string_prop), Some(JsonValueMatcher::String(prop_value))) => {
             Some(prop).filter(|_| string_prop.eq(prop_value))
           }
           (JsonValue::Number(number_prop), Some(JsonValueMatcher::Number(prop_value))) => {

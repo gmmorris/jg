@@ -1,6 +1,5 @@
-#[derive(Debug)]
 pub enum JsonValueMatcher {
-  ExactString(String),
+  String(String),
   Number(i64),
   Boolean(bool),
   Null,
@@ -10,7 +9,7 @@ pub fn identify_value_matcher(cap: &regex::Captures) -> Result<Option<JsonValueM
   let string_matcher = cap
     .name("stringValue")
     .map(|value| value)
-    .map(|value| JsonValueMatcher::ExactString(String::from(value.as_str())))
+    .map(|value| JsonValueMatcher::String(String::from(value.as_str())))
     .map(|string_value| Ok(string_value));
 
   let number_matcher =

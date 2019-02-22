@@ -26,13 +26,13 @@ mod cli {
         assert_cmd.assert().success().stdout("{\"video\":{\"sizes\":[480,640,880]}}\n");
     }
 
-    #[test]
+    #[test] 
     fn should_match_array_with_boolean_value() {
         let mut cmd = Command::main_binary().unwrap();
 
         cmd.arg(r#".video.fields[~=true]"#);
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"fields\":[false,true]}}\n");
+        let     mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"fields\":[false,true]}}\n");
 
         assert_cmd.assert().success().stdout("{\"video\":{\"fields\":[false,true]}}\n");
     }
