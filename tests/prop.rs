@@ -4,8 +4,6 @@ mod cli {
 
     use assert_cmd::prelude::*;
 
-    use predicates::prelude::*;
-
     #[test]
     fn should_match_single_json_when_selector_is_prop() {
         let mut cmd = Command::main_binary().unwrap();
