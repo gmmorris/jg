@@ -5,7 +5,7 @@ use super::value_matchers::*;
 
 pub fn prop(
   prop_name: String,
-  prop_value: Option<JsonValueMatcher>,
+  prop_value: Option<JsonValueMemberMatcher>,
 ) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
   Box::new(move |input: Option<&JsonValue>| match input {
     Some(json) => match json {
@@ -13,19 +13,23 @@ pub fn prop(
         Some(prop) => match (prop, &prop_value) {
           (
             JsonValue::String(string_prop),
-            Some(JsonValueMatcher::String(JsonValueStringMatcher::ExactString(prop_value))),
+            Some(JsonValueMemberMatcher::Exact(JsonValueMatcher::String(prop_value))),
           ) => Some(prop).filter(|_| string_prop.eq(prop_value)),
           (
             JsonValue::Short(string_prop),
-            Some(JsonValueMatcher::String(JsonValueStringMatcher::ExactString(prop_value))),
+            Some(JsonValueMemberMatcher::Exact(JsonValueMatcher::String(prop_value))),
           ) => Some(prop).filter(|_| string_prop.eq(prop_value)),
-          (JsonValue::Number(number_prop), Some(JsonValueMatcher::Number(prop_value))) => {
-            Some(prop).filter(|_| number_prop.eq(prop_value))
+          (
+            JsonValue::Number(number_prop),
+            Some(JsonValueMemberMatcher::Exact(JsonValueMatcher::Number(prop_value))),
+          ) => Some(prop).filter(|_| number_prop.eq(prop_value)),
+          (
+            JsonValue::Boolean(bool_prop),
+            Some(JsonValueMemberMatcher::Exact(JsonValueMatcher::Boolean(prop_value))),
+          ) => Some(prop).filter(|_| bool_prop.eq(prop_value)),
+          (JsonValue::Null, Some(JsonValueMemberMatcher::Exact(JsonValueMatcher::Null))) => {
+            Some(prop)
           }
-          (JsonValue::Boolean(bool_prop), Some(JsonValueMatcher::Boolean(prop_value))) => {
-            Some(prop).filter(|_| bool_prop.eq(prop_value))
-          }
-          (JsonValue::Null, Some(JsonValueMatcher::Null)) => Some(prop),
           (_, Some(_)) => None,
           (_, None) => Some(prop),
         },
@@ -37,12 +41,12 @@ pub fn prop(
   })
 }
 
-fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMatcher>, Option<&str>)> {
+fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMemberMatcher>, Option<&str>)> {
   lazy_static! {
     static ref re_prop: Regex =
       Regex::new(r#"^\.(?P<prop>([[:word:]])+)(?P<remainder>.+)?$"#).unwrap();
     static ref re_prop_value: Regex = Regex::new(
-      r#"^\{"(?P<prop>([[:word:]])+)"(:("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+)))?\}(?P<remainder>.+)?$"#
+      concat!(r#"^\{"(?P<prop>([[:word:]])+)"("#,r#"(?P<matchingStrategy>(:)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+)))?\}(?P<remainder>.+)?$"#)
     )
     .unwrap();
   }

@@ -5,7 +5,7 @@ use super::value_matchers::*;
 
 enum ArrayMember {
   Index(usize),
-  Value(JsonValueMatcher),
+  Value(JsonValueMemberMatcher),
 }
 
 pub fn array_index(index: usize) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
@@ -18,33 +18,45 @@ pub fn array_index(index: usize) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonVa
   })
 }
 
+fn member_in_array<'a>(
+  sequence: &'a Vec<JsonValue>,
+  json_value_matcher: &JsonValueMatcher,
+) -> Option<&'a JsonValue> {
+  sequence
+    .iter()
+    .find(|member| match (member, json_value_matcher) {
+      (JsonValue::Short(string_prop), JsonValueMatcher::String(string_value)) => {
+        string_value.eq(string_prop)
+      }
+      (JsonValue::String(string_prop), JsonValueMatcher::String(string_value)) => {
+        string_value.eq(string_prop)
+      }
+      (JsonValue::Boolean(bool_prop), JsonValueMatcher::Boolean(bool_value)) => {
+        bool_prop.eq(bool_value)
+      }
+      (JsonValue::Number(num_prop), JsonValueMatcher::Number(num_value)) => num_prop.eq(num_value),
+      (JsonValue::Null, JsonValueMatcher::Null) => true,
+      _ => false,
+    })
+}
+
 pub fn array_member(
-  json_value_matcher: JsonValueMatcher,
+  member_matcher: JsonValueMemberMatcher,
 ) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
   Box::new(move |input: Option<&JsonValue>| match input {
     Some(json) => match json {
-      JsonValue::Array(ref array) => {
-        array
-          .iter()
-          .find(|member| match (member, &json_value_matcher) {
-            (
-              JsonValue::Short(string_prop),
-              JsonValueMatcher::String(JsonValueStringMatcher::ExactString(string_value)),
-            ) => string_value.eq(string_prop),
-            (
-              JsonValue::String(string_prop),
-              JsonValueMatcher::String(JsonValueStringMatcher::ExactString(string_value)),
-            ) => string_value.eq(string_prop),
-            (JsonValue::Boolean(bool_prop), JsonValueMatcher::Boolean(bool_value)) => {
-              bool_prop.eq(bool_value)
-            }
-            (JsonValue::Number(num_prop), JsonValueMatcher::Number(num_value)) => {
-              num_prop.eq(num_value)
-            }
-            (JsonValue::Null, JsonValueMatcher::Null) => true,
-            _ => false,
-          })
-      }
+      JsonValue::Array(ref array) => match &member_matcher {
+        JsonValueMemberMatcher::Exact(json_value_matcher) => {
+          if array.len() == 1 {
+            member_in_array(array, json_value_matcher)
+          } else {
+            None
+          }
+        }
+        JsonValueMemberMatcher::ContainsExact(json_value_matcher) => {
+          member_in_array(array, json_value_matcher)
+        }
+      },
       _ => None,
     },
     None => None,
@@ -56,7 +68,7 @@ fn match_array_index(pattern: &str) -> Option<(ArrayMember, Option<&str>)> {
     static ref re_index: Regex =
       Regex::new(r#"^\[(?P<index>([[:digit:]])+)\](?P<remainder>.+)?$"#).unwrap();
     static ref re_member: Regex = Regex::new(
-      r#"^\[~=("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+))\](?P<remainder>.+)?$"#
+      concat!(r#"^\["#,r#"(?P<matchingStrategy>(~=|=)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+))\](?P<remainder>.+)?$"#)
     )
     .unwrap();
   }
@@ -163,14 +175,14 @@ mod tests {
     let ref data = array!["John Doe", "Jane Doe", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."];
 
     assert_eq!(
-      array_member(JsonValueMatcher::String(
-        JsonValueStringMatcher::ExactString(String::from("Jane Doe"))
+      array_member(JsonValueMemberMatcher::ContainsExact(
+        JsonValueMatcher::String(String::from("Jane Doe"))
       ))(Some(data)),
       Some(&data[1])
     );
 
     assert_eq!(
-      array_member(JsonValueMatcher::String(JsonValueStringMatcher::ExactString(String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."))))(Some(data)),
+      array_member(JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::String(String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."))))(Some(data)),
       Some(&data[2])
     );
   }
@@ -180,12 +192,16 @@ mod tests {
     let ref data = array![true, false];
 
     assert_eq!(
-      array_member(JsonValueMatcher::Boolean(true))(Some(data)),
+      array_member(JsonValueMemberMatcher::ContainsExact(
+        JsonValueMatcher::Boolean(true)
+      ))(Some(data)),
       Some(&data[0])
     );
 
     assert_eq!(
-      array_member(JsonValueMatcher::Boolean(false))(Some(data)),
+      array_member(JsonValueMemberMatcher::ContainsExact(
+        JsonValueMatcher::Boolean(false)
+      ))(Some(data)),
       Some(&data[1])
     );
   }
@@ -195,7 +211,9 @@ mod tests {
     let ref data = array![true, JsonValue::Null];
 
     assert_eq!(
-      array_member(JsonValueMatcher::Null)(Some(data)),
+      array_member(JsonValueMemberMatcher::ContainsExact(
+        JsonValueMatcher::Null
+      ))(Some(data)),
       Some(&data[1])
     );
   }
@@ -205,22 +223,30 @@ mod tests {
     let ref data = array![0, -10, 10, 123456789];
 
     assert_eq!(
-      array_member(JsonValueMatcher::Number(0))(Some(data)),
+      array_member(JsonValueMemberMatcher::ContainsExact(
+        JsonValueMatcher::Number(0)
+      ))(Some(data)),
       Some(&data[0])
     );
 
     assert_eq!(
-      array_member(JsonValueMatcher::Number(-10))(Some(data)),
+      array_member(JsonValueMemberMatcher::ContainsExact(
+        JsonValueMatcher::Number(-10)
+      ))(Some(data)),
       Some(&data[1])
     );
 
     assert_eq!(
-      array_member(JsonValueMatcher::Number(10))(Some(data)),
+      array_member(JsonValueMemberMatcher::ContainsExact(
+        JsonValueMatcher::Number(10)
+      ))(Some(data)),
       Some(&data[2])
     );
 
     assert_eq!(
-      array_member(JsonValueMatcher::Number(123456789))(Some(data)),
+      array_member(JsonValueMemberMatcher::ContainsExact(
+        JsonValueMatcher::Number(123456789)
+      ))(Some(data)),
       Some(&data[3])
     );
   }

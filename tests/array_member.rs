@@ -10,9 +10,47 @@ mod cli {
 
         cmd.arg(r#".video.mimes[~="application/javascript"]"#);
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}\n");
+        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}
+{\"video\":{\"mimes\":[\"video/mp4\",\"application/javascript\"]}}\n");
 
-        assert_cmd.assert().success().stdout("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}\n");
+        assert_cmd.assert().success().stdout("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}
+{\"video\":{\"mimes\":[\"video/mp4\",\"application/javascript\"]}}\n");
+    }
+
+    #[test]
+    fn should_match_array_with_exact_string_value() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#".video.mimes[="video/mp4"]"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}
+{\"video\":{\"mimes\":[\"video/mp4\"]}}\n");
+
+        assert_cmd.assert().success().stdout("{\"video\":{\"mimes\":[\"video/mp4\"]}}\n");
+    }
+
+    #[test]
+    fn should_match_array_with_exact_boolean_value() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#".video.opts[=true]"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}
+{\"video\":{\"opts\":[true]}}\n");
+
+        assert_cmd.assert().success().stdout("{\"video\":{\"opts\":[true]}}\n");
+    }
+
+    #[test]
+    fn should_match_array_with_exact_null_value() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#".video.opts[=null]"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}
+{\"video\":{\"opts\":[null]}}");
+
+        assert_cmd.assert().success().stdout("{\"video\":{\"opts\":[null]}}\n");
     }
 
     #[test]
@@ -24,6 +62,18 @@ mod cli {
         let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"sizes\":[480,640,880]}}\n");
 
         assert_cmd.assert().success().stdout("{\"video\":{\"sizes\":[480,640,880]}}\n");
+    }
+
+    #[test]
+    fn should_match_array_with_exact_numeric_value() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#".video.sizes[=480]"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"sizes\":[480,640,880]}}
+{\"video\":{\"sizes\":[480]}}\n");
+
+        assert_cmd.assert().success().stdout("{\"video\":{\"sizes\":[480]}}\n");
     }
 
     #[test] 
