@@ -90,10 +90,28 @@ mod cli {
     }
 
     #[test]
-    fn should_match_json_porperty_and_value_using_dictionary_index_selector() {
+    fn should_match_json_porperty_with_a_value_when_using_the_Exact_matcher() {
         let mut cmd = Command::main_binary().unwrap();
 
         cmd.arg(r#"{"name":"blanco white"}"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{ \"name\":\"inigo montoya\" }
+{\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
+{ \"name\":\"blanco white\" }\n",
+        );
+
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"name\":\"blanco white\"}\n");
+    }
+
+    #[test]
+    fn should_match_json_porperty_with_a_value_when_using_the_Contains_Exact_matcher() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#"{"name"~:"white"}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
             "{ \"name\":\"inigo montoya\" }

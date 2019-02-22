@@ -15,7 +15,7 @@ fn identify_member_matcher(
   member: JsonValueMatcher,
 ) -> Result<JsonValueMemberMatcher, ()> {
   match cap.name("matchingStrategy").map(|value| value.as_str()) {
-    Some("~=") => Ok(JsonValueMemberMatcher::ContainsExact(member)),
+    Some("~=") | Some("~:") => Ok(JsonValueMemberMatcher::ContainsExact(member)),
     Some("=") | Some(":") => Ok(JsonValueMemberMatcher::Exact(member)),
     _ => Err(()),
   }

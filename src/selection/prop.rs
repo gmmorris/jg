@@ -9,35 +9,50 @@ pub fn prop(
 ) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
   Box::new(move |input: Option<&JsonValue>| match input {
     Some(json) => match json {
-      JsonValue::Object(ref object) => match object.get(&prop_name) {
-        Some(prop) => match (prop, &prop_value) {
-          (
-            JsonValue::String(string_prop),
-            Some(JsonValueMemberMatcher::Exact(JsonValueMatcher::String(prop_value))),
-          ) => Some(prop).filter(|_| string_prop.eq(prop_value)),
-          (
-            JsonValue::Short(string_prop),
-            Some(JsonValueMemberMatcher::Exact(JsonValueMatcher::String(prop_value))),
-          ) => Some(prop).filter(|_| string_prop.eq(prop_value)),
-          (
-            JsonValue::Number(number_prop),
-            Some(JsonValueMemberMatcher::Exact(JsonValueMatcher::Number(prop_value))),
-          ) => Some(prop).filter(|_| number_prop.eq(prop_value)),
-          (
-            JsonValue::Boolean(bool_prop),
-            Some(JsonValueMemberMatcher::Exact(JsonValueMatcher::Boolean(prop_value))),
-          ) => Some(prop).filter(|_| bool_prop.eq(prop_value)),
-          (JsonValue::Null, Some(JsonValueMemberMatcher::Exact(JsonValueMatcher::Null))) => {
-            Some(prop)
+      JsonValue::Object(ref object) => match (object.get(&prop_name), &prop_value) {
+        (Some(prop), Some(JsonValueMemberMatcher::Exact(prop_value_matcher))) => {
+          match (prop, prop_value_matcher) {
+            (JsonValue::String(string_prop), JsonValueMatcher::String(prop_value)) => {
+              Some(prop).filter(|_| string_prop.eq(prop_value))
+            }
+            (JsonValue::Short(string_prop), JsonValueMatcher::String(prop_value)) => {
+              Some(prop).filter(|_| string_prop.eq(prop_value))
+            }
+            (JsonValue::Number(number_prop), JsonValueMatcher::Number(prop_value)) => {
+              Some(prop).filter(|_| number_prop.eq(prop_value))
+            }
+            (JsonValue::Boolean(bool_prop), JsonValueMatcher::Boolean(prop_value)) => {
+              Some(prop).filter(|_| bool_prop.eq(prop_value))
+            }
+            (JsonValue::Null, JsonValueMatcher::Null) => Some(prop),
+            (_, _) => None,
           }
-          (_, Some(_)) => None,
-          (_, None) => Some(prop),
-        },
-        None => None,
+        }
+        (Some(prop), Some(JsonValueMemberMatcher::ContainsExact(prop_value_matcher))) => {
+          match (prop, prop_value_matcher) {
+            (JsonValue::String(string_prop), JsonValueMatcher::String(prop_value)) => Some(prop)
+              .filter(|_| {
+                string_prop
+                  .split_whitespace()
+                  .find(|string_prop| string_prop.eq(prop_value))
+                  .is_some()
+              }),
+            (JsonValue::Short(string_prop), JsonValueMatcher::String(prop_value)) => Some(prop)
+              .filter(|_| {
+                string_prop
+                  .split_whitespace()
+                  .find(|string_prop| string_prop.eq(prop_value))
+                  .is_some()
+              }),
+            (_, _) => None,
+          }
+        }
+        (Some(prop), None) => Some(prop),
+        (None, _) => None,
       },
       _ => None,
     },
-    None => None,
+    _ => None,
   })
 }
 
@@ -46,7 +61,7 @@ fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMemberMatcher>, Op
     static ref re_prop: Regex =
       Regex::new(r#"^\.(?P<prop>([[:word:]])+)(?P<remainder>.+)?$"#).unwrap();
     static ref re_prop_value: Regex = Regex::new(
-      concat!(r#"^\{"(?P<prop>([[:word:]])+)"("#,r#"(?P<matchingStrategy>(:)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+)))?\}(?P<remainder>.+)?$"#)
+      concat!(r#"^\{"(?P<prop>([[:word:]])+)"("#,r#"(?P<matchingStrategy>(:|~:)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+)))?\}(?P<remainder>.+)?$"#)
     )
     .unwrap();
   }
