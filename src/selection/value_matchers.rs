@@ -10,6 +10,7 @@ pub enum JsonValueMemberMatcher {
   ContainsExact(JsonValueMatcher),
   Prefixed(JsonValueMatcher),
   Suffixed(JsonValueMatcher),
+  Contains(JsonValueMatcher),
 }
 
 fn identify_member_matcher(
@@ -21,6 +22,7 @@ fn identify_member_matcher(
     Some("^=") | Some("^:") => Ok(JsonValueMemberMatcher::Prefixed(member)),
     Some("$=") | Some("$:") => Ok(JsonValueMemberMatcher::Suffixed(member)),
     Some("=") | Some(":") => Ok(JsonValueMemberMatcher::Exact(member)),
+    Some("*=") | Some("*:") => Ok(JsonValueMemberMatcher::Contains(member)),
     _ => Err(()),
   }
 }

@@ -82,6 +82,19 @@ pub fn array_member(
               _ => false,
             })
         }
+        JsonValueMemberMatcher::Contains(json_value_matcher) => {
+          array
+            .iter()
+            .find(|member| match (member, json_value_matcher) {
+              (JsonValue::Short(string_prop), JsonValueMatcher::String(string_value)) => {
+                string_prop.contains(string_value)
+              }
+              (JsonValue::String(string_prop), JsonValueMatcher::String(string_value)) => {
+                string_prop.contains(string_value)
+              }
+              _ => false,
+            })
+        }
       },
       _ => None,
     },
@@ -94,7 +107,7 @@ fn match_array_index(pattern: &str) -> Option<(ArrayMember, Option<&str>)> {
     static ref re_index: Regex =
       Regex::new(r#"^\[(?P<index>([[:digit:]])+)\](?P<remainder>.+)?$"#).unwrap();
     static ref re_member: Regex = Regex::new(
-      concat!(r#"^\["#,r#"(?P<matchingStrategy>(~=|=|\$=|\^=)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+))\](?P<remainder>.+)?$"#)
+      concat!(r#"^\["#,r#"(?P<matchingStrategy>(~=|=|\$=|\^=|\*=)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+))\](?P<remainder>.+)?$"#)
     )
     .unwrap();
   }

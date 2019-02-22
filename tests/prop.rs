@@ -90,7 +90,7 @@ mod cli {
     }
 
     #[test]
-    fn should_match_json_porperty_with_a_value_when_using_the_Exact_matcher() {
+    fn should_match_json_porperty_with_a_value_when_using_the_exact_matcher() {
         let mut cmd = Command::main_binary().unwrap();
 
         cmd.arg(r#"{"name":"blanco white"}"#);
@@ -108,7 +108,7 @@ mod cli {
     }
 
     #[test]
-    fn should_match_json_porperty_with_a_value_when_using_the_Contains_Exact_matcher() {
+    fn should_match_json_porperty_with_a_value_when_using_the_contains_exact_matcher() {
         let mut cmd = Command::main_binary().unwrap();
 
         cmd.arg(r#"{"name"~:"white"}"#);
@@ -123,6 +123,24 @@ mod cli {
             .assert()
             .success()
             .stdout("{\"name\":\"blanco white\"}\n");
+    }
+
+    #[test]
+    fn should_match_json_porperty_with_a_value_when_using_the_contains_matcher() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#"{"name"*:"o "}"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{ \"name\":\"inigo montoya\" }
+{\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
+{ \"name\":\"blanco white\" }\n",
+        );
+
+        assert_cmd.assert().success().stdout(
+            "{\"name\":\"inigo montoya\"}
+{\"name\":\"blanco white\"}\n",
+        );
     }
 
     #[test]

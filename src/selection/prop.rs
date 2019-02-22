@@ -69,6 +69,17 @@ pub fn prop(
             (_, _) => None,
           }
         }
+        (Some(prop), Some(JsonValueMemberMatcher::Contains(prop_value_matcher))) => {
+          match (prop, prop_value_matcher) {
+            (JsonValue::String(string_prop), JsonValueMatcher::String(prop_value)) => {
+              Some(prop).filter(|_| string_prop.contains(prop_value))
+            }
+            (JsonValue::Short(string_prop), JsonValueMatcher::String(prop_value)) => {
+              Some(prop).filter(|_| string_prop.contains(prop_value))
+            }
+            (_, _) => None,
+          }
+        }
         (Some(prop), None) => Some(prop),
         (None, _) => None,
       },
@@ -83,7 +94,7 @@ fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMemberMatcher>, Op
     static ref re_prop: Regex =
       Regex::new(r#"^\.(?P<prop>([[:word:]])+)(?P<remainder>.+)?$"#).unwrap();
     static ref re_prop_value: Regex = Regex::new(
-      concat!(r#"^\{"(?P<prop>([[:word:]])+)"("#,r#"(?P<matchingStrategy>(:|~:|\$:|\^:)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+)))?\}(?P<remainder>.+)?$"#)
+      concat!(r#"^\{"(?P<prop>([[:word:]])+)"("#,r#"(?P<matchingStrategy>(:|~:|\$:|\^:|\*:)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+)))?\}(?P<remainder>.+)?$"#)
     )
     .unwrap();
   }
