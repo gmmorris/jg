@@ -4,18 +4,49 @@ mod cli {
 
     use assert_cmd::prelude::*;
 
-    use predicates::prelude::*;
+    #[test]
+    fn should_match_array_with_string_value() {
+        let mut cmd = Command::main_binary().unwrap();
 
-    // #[test]
-    // fn should_match_array_with_string_value() {
-    //     let mut cmd = Command::main_binary().unwrap();
+        cmd.arg(r#".video.mimes[~="application/javascript"]"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}\n");
 
-    //     cmd.arg(r#".video.mimes["application/javascript"]"#);
-    //     let mut stdin_cmd = cmd.with_stdin();
-    //     let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"mimes\":[\"application/javascript\", \"application/x-javascript\",\"video/mp4\"] } }\n");
+        assert_cmd.assert().success().stdout("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}\n");
+    }
 
-    //     assert_cmd.assert().success().stdout("{\"video\":{\"mimes\":[\"application/javascript\", \"application/x-javascript\",\"video/mp4\"] } }\n");
-    // }
+    #[test]
+    fn should_match_array_with_numeric_value() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#".video.sizes[~=480]"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"sizes\":[480,640,880]}}\n");
+
+        assert_cmd.assert().success().stdout("{\"video\":{\"sizes\":[480,640,880]}}\n");
+    }
+
+    #[test]
+    fn should_match_array_with_boolean_value() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#".video.fields[~=true]"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"fields\":[false,true]}}\n");
+
+        assert_cmd.assert().success().stdout("{\"video\":{\"fields\":[false,true]}}\n");
+    }
+
+    #[test]
+    fn should_match_array_with_null_value() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#".video.fields[~=null]"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"fields\":[null]}}\n");
+
+        assert_cmd.assert().success().stdout("{\"video\":{\"fields\":[null]}}\n");
+    }
 
     #[test]
     fn should_match_array_with_first_index() {
