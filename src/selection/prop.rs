@@ -57,7 +57,7 @@ fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMatcher>, Option<&
   lazy_static! {
     static ref re_prop: Regex =
       Regex::new(r#"^\.(?P<prop>([[:word:]])+)(?P<remainder>.+)?$"#).unwrap();
-    static ref re_index_prop: Regex = Regex::new(
+    static ref re_prop_value: Regex = Regex::new(
       r#"^\{"(?P<prop>([[:word:]])+)"(:("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)))?\}(?P<remainder>.+)?$"#
     )
     .unwrap();
@@ -65,7 +65,7 @@ fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMatcher>, Option<&
 
   match re_prop
     .captures(pattern)
-    .or(re_index_prop.captures(pattern))
+    .or(re_prop_value.captures(pattern))
   {
     Some(cap) => cap
       .name("prop")
