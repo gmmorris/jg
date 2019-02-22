@@ -1,22 +1,29 @@
 use json::JsonValue;
 use regex::Regex;
 
+use super::value_matchers::JsonValueMatcher;
+
 pub fn prop(
   prop_name: String,
-  prop_value: Option<JsonValue>,
+  prop_value: Option<JsonValueMatcher>,
 ) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
   Box::new(move |input: Option<&JsonValue>| match input {
     Some(json) => match json {
-      JsonValue::Object(ref object) => match (object.get(&prop_name), &prop_value) {
-        (Some(prop), Some(prop_value)) => {
-          if prop.eq(prop_value) {
-            Some(prop)
-          } else {
-            None
+      JsonValue::Object(ref object) => match object.get(&prop_name) {
+        Some(prop) => match (prop, &prop_value) {
+          (JsonValue::String(string_prop), Some(JsonValueMatcher::ExactString(prop_value))) => {
+            Some(prop).filter(|_| string_prop.eq(prop_value))
           }
-        }
-        (Some(prop), None) => Some(prop),
-        (_, _) => None,
+          (JsonValue::Short(string_prop), Some(JsonValueMatcher::ExactString(prop_value))) => {
+            Some(prop).filter(|_| string_prop.eq(prop_value))
+          }
+          (JsonValue::Number(number_prop), Some(JsonValueMatcher::Number(prop_value))) => {
+            Some(prop).filter(|_| number_prop.eq(prop_value))
+          }
+          (json_value, Some(filter)) => None,
+          (_, None) => Some(prop),
+        },
+        None => None,
       },
       _ => None,
     },
@@ -24,12 +31,34 @@ pub fn prop(
   })
 }
 
-fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValue>, Option<&str>)> {
+fn identify_value_matcher(cap: &regex::Captures) -> Result<Option<JsonValueMatcher>, ()> {
+  let string_matcher = cap
+    .name("stringValue")
+    .map(|value| value)
+    .map(|value| JsonValueMatcher::ExactString(String::from(value.as_str())))
+    .map(|string_value| Ok(string_value));
+
+  let number_matcher =
+    cap
+      .name("numberValue")
+      .map(|value| match String::from(value.as_str()).parse::<i64>() {
+        Ok(number_value) => Ok(JsonValueMatcher::Number(number_value)),
+        Err(_) => Err(()),
+      });
+
+  match string_matcher.or(number_matcher) {
+    Some(Ok(json_value_matcher)) => Ok(Some(json_value_matcher)),
+    Some(Err(_)) => Err(()),
+    None => Ok(None),
+  }
+}
+
+fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMatcher>, Option<&str>)> {
   lazy_static! {
     static ref re_prop: Regex =
       Regex::new(r#"^\.(?P<prop>([[:word:]])+)(?P<remainder>.+)?$"#).unwrap();
     static ref re_index_prop: Regex = Regex::new(
-      r#"^\{"(?P<prop>([[:word:]])+)"(:"(?P<stringValue>([^"])+)")?\}(?P<remainder>.+)?$"#
+      r#"^\{"(?P<prop>([[:word:]])+)"(:("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)))?\}(?P<remainder>.+)?$"#
     )
     .unwrap();
   }
@@ -38,15 +67,16 @@ fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValue>, Option<&str>)> 
     .captures(pattern)
     .or(re_index_prop.captures(pattern))
   {
-    Some(cap) => cap.name("prop").map(|prop| {
-      (
-        prop.as_str(),
-        cap
-          .name("stringValue")
-          .map(|value| JsonValue::String(String::from(value.as_str()))),
-        cap.name("remainder").map(|remainder| remainder.as_str()),
-      )
-    }),
+    Some(cap) => cap
+      .name("prop")
+      .and_then(|prop| match identify_value_matcher(&cap) {
+        Ok(json_matcher) => Some((
+          prop.as_str(),
+          json_matcher,
+          cap.name("remainder").map(|remainder| remainder.as_str()),
+        )),
+        Err(_) => None,
+      }),
     None => None,
   }
 }
@@ -129,5 +159,21 @@ mod tests {
       prop(String::from("name"), None)(Some(data)),
       Some(&data["name"])
     );
+  }
+
+  #[test]
+  fn should_match_number_prop() {
+    let res = greedily_matches(Some(r#"{"age":30}"#));
+    assert!(res.is_ok());
+
+    let ref data = object! {
+        "name"    => "John Doe",
+        "age"     => 30
+    };
+
+    match res {
+      Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["age"])),
+      _ => panic!("Invalid result"),
+    }
   }
 }

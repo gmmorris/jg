@@ -3,6 +3,7 @@ mod array_member;
 mod identity;
 mod prop;
 mod sequence;
+mod value_matchers;
 
 pub fn match_json_slice(
   matchers: &Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
