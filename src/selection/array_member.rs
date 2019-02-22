@@ -1,7 +1,7 @@
 use json::JsonValue;
 use regex::Regex;
 
-use super::value_matchers::{identify_value_matcher, JsonValueMatcher};
+use super::value_matchers::*;
 
 enum ArrayMember {
   Index(usize),
@@ -27,12 +27,14 @@ pub fn array_member(
         array
           .iter()
           .find(|member| match (member, &json_value_matcher) {
-            (JsonValue::Short(string_prop), JsonValueMatcher::String(string_value)) => {
-              string_value.eq(string_prop)
-            }
-            (JsonValue::String(string_prop), JsonValueMatcher::String(string_value)) => {
-              string_value.eq(string_prop)
-            }
+            (
+              JsonValue::Short(string_prop),
+              JsonValueMatcher::String(JsonValueStringMatcher::ExactString(string_value)),
+            ) => string_value.eq(string_prop),
+            (
+              JsonValue::String(string_prop),
+              JsonValueMatcher::String(JsonValueStringMatcher::ExactString(string_value)),
+            ) => string_value.eq(string_prop),
             (JsonValue::Boolean(bool_prop), JsonValueMatcher::Boolean(bool_value)) => {
               bool_prop.eq(bool_value)
             }
@@ -161,12 +163,14 @@ mod tests {
     let ref data = array!["John Doe", "Jane Doe", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."];
 
     assert_eq!(
-      array_member(JsonValueMatcher::String(String::from("Jane Doe")))(Some(data)),
+      array_member(JsonValueMatcher::String(
+        JsonValueStringMatcher::ExactString(String::from("Jane Doe"))
+      ))(Some(data)),
       Some(&data[1])
     );
 
     assert_eq!(
-      array_member(JsonValueMatcher::String(String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")))(Some(data)),
+      array_member(JsonValueMatcher::String(JsonValueStringMatcher::ExactString(String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."))))(Some(data)),
       Some(&data[2])
     );
   }

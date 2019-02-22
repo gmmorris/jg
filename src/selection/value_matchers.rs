@@ -1,33 +1,49 @@
 pub enum JsonValueMatcher {
-  String(String),
+  String(JsonValueStringMatcher),
   Number(i64),
   Boolean(bool),
   Null,
 }
 
-pub fn identify_value_matcher(cap: &regex::Captures) -> Result<Option<JsonValueMatcher>, ()> {
-  let string_matcher = cap
+pub enum JsonValueStringMatcher {
+  ExactString(String),
+}
+
+fn identify_string_matcher(cap: &regex::Captures) -> Option<Result<JsonValueMatcher, ()>> {
+  cap
     .name("stringValue")
     .map(|value| value)
-    .map(|value| JsonValueMatcher::String(String::from(value.as_str())))
-    .map(|string_value| Ok(string_value));
+    .map(|value| {
+      JsonValueMatcher::String(JsonValueStringMatcher::ExactString(String::from(
+        value.as_str(),
+      )))
+    })
+    .map(|string_value| Ok(string_value))
+}
 
-  let number_matcher =
-    cap
-      .name("numberValue")
-      .map(|value| match String::from(value.as_str()).parse::<i64>() {
-        Ok(number_value) => Ok(JsonValueMatcher::Number(number_value)),
-        Err(_) => Err(()),
-      });
+fn identify_number_matcher(cap: &regex::Captures) -> Option<Result<JsonValueMatcher, ()>> {
+  cap
+    .name("numberValue")
+    .map(|value| match String::from(value.as_str()).parse::<i64>() {
+      Ok(number_value) => Ok(JsonValueMatcher::Number(number_value)),
+      Err(_) => Err(()),
+    })
+}
 
-  let literal_matcher = cap.name("literalValue").map(|value| match value.as_str() {
+fn identify_literal_matcher(cap: &regex::Captures) -> Option<Result<JsonValueMatcher, ()>> {
+  cap.name("literalValue").map(|value| match value.as_str() {
     "true" => Ok(JsonValueMatcher::Boolean(true)),
     "false" => Ok(JsonValueMatcher::Boolean(false)),
     "null" => Ok(JsonValueMatcher::Null),
     _ => Err(()),
-  });
+  })
+}
 
-  match string_matcher.or(number_matcher).or(literal_matcher) {
+pub fn identify_value_matcher(cap: &regex::Captures) -> Result<Option<JsonValueMatcher>, ()> {
+  match identify_string_matcher(cap)
+    .or(identify_number_matcher(cap))
+    .or(identify_literal_matcher(cap))
+  {
     Some(Ok(json_value_matcher)) => Ok(Some(json_value_matcher)),
     Some(Err(_)) => Err(()),
     None => Ok(None),
