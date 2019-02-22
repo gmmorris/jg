@@ -56,6 +56,32 @@ pub fn array_member(
         JsonValueMemberMatcher::ContainsExact(json_value_matcher) => {
           member_in_array(array, json_value_matcher)
         }
+        JsonValueMemberMatcher::Prefixed(json_value_matcher) => {
+          array
+            .iter()
+            .find(|member| match (member, json_value_matcher) {
+              (JsonValue::Short(string_prop), JsonValueMatcher::String(string_value)) => {
+                string_prop.starts_with(string_value)
+              }
+              (JsonValue::String(string_prop), JsonValueMatcher::String(string_value)) => {
+                string_prop.starts_with(string_value)
+              }
+              _ => false,
+            })
+        }
+        JsonValueMemberMatcher::Suffixed(json_value_matcher) => {
+          array
+            .iter()
+            .find(|member| match (member, json_value_matcher) {
+              (JsonValue::Short(string_prop), JsonValueMatcher::String(string_value)) => {
+                string_prop.ends_with(string_value)
+              }
+              (JsonValue::String(string_prop), JsonValueMatcher::String(string_value)) => {
+                string_prop.ends_with(string_value)
+              }
+              _ => false,
+            })
+        }
       },
       _ => None,
     },
@@ -68,7 +94,7 @@ fn match_array_index(pattern: &str) -> Option<(ArrayMember, Option<&str>)> {
     static ref re_index: Regex =
       Regex::new(r#"^\[(?P<index>([[:digit:]])+)\](?P<remainder>.+)?$"#).unwrap();
     static ref re_member: Regex = Regex::new(
-      concat!(r#"^\["#,r#"(?P<matchingStrategy>(~=|=)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+))\](?P<remainder>.+)?$"#)
+      concat!(r#"^\["#,r#"(?P<matchingStrategy>(~=|=|\$=|\^=)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+))\](?P<remainder>.+)?$"#)
     )
     .unwrap();
   }
@@ -171,7 +197,19 @@ mod tests {
   }
 
   #[test]
-  fn should_return_node_when_string_value_is_present_in_array() {
+  fn should_return_node_when_exact_string_value_is_only_value_in_array() {
+    let ref data = array!["Jane Doe"];
+
+    assert_eq!(
+      array_member(JsonValueMemberMatcher::Exact(JsonValueMatcher::String(
+        String::from("Jane Doe")
+      )))(Some(data)),
+      Some(&data[0])
+    );
+  }
+
+  #[test]
+  fn should_return_node_when_exact_string_value_is_contained_in_array() {
     let ref data = array!["John Doe", "Jane Doe", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."];
 
     assert_eq!(

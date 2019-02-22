@@ -47,6 +47,28 @@ pub fn prop(
             (_, _) => None,
           }
         }
+        (Some(prop), Some(JsonValueMemberMatcher::Prefixed(prop_value_matcher))) => {
+          match (prop, prop_value_matcher) {
+            (JsonValue::String(string_prop), JsonValueMatcher::String(prop_value)) => {
+              Some(prop).filter(|_| string_prop.starts_with(prop_value))
+            }
+            (JsonValue::Short(string_prop), JsonValueMatcher::String(prop_value)) => {
+              Some(prop).filter(|_| string_prop.starts_with(prop_value))
+            }
+            (_, _) => None,
+          }
+        }
+        (Some(prop), Some(JsonValueMemberMatcher::Suffixed(prop_value_matcher))) => {
+          match (prop, prop_value_matcher) {
+            (JsonValue::String(string_prop), JsonValueMatcher::String(prop_value)) => {
+              Some(prop).filter(|_| string_prop.ends_with(prop_value))
+            }
+            (JsonValue::Short(string_prop), JsonValueMatcher::String(prop_value)) => {
+              Some(prop).filter(|_| string_prop.ends_with(prop_value))
+            }
+            (_, _) => None,
+          }
+        }
         (Some(prop), None) => Some(prop),
         (None, _) => None,
       },
@@ -61,7 +83,7 @@ fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMemberMatcher>, Op
     static ref re_prop: Regex =
       Regex::new(r#"^\.(?P<prop>([[:word:]])+)(?P<remainder>.+)?$"#).unwrap();
     static ref re_prop_value: Regex = Regex::new(
-      concat!(r#"^\{"(?P<prop>([[:word:]])+)"("#,r#"(?P<matchingStrategy>(:|~:)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+)))?\}(?P<remainder>.+)?$"#)
+      concat!(r#"^\{"(?P<prop>([[:word:]])+)"("#,r#"(?P<matchingStrategy>(:|~:|\$:|\^:)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+)))?\}(?P<remainder>.+)?$"#)
     )
     .unwrap();
   }
@@ -176,6 +198,74 @@ mod tests {
 
     match res {
       Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["age"])),
+      _ => panic!("Invalid result"),
+    }
+  }
+
+  #[test]
+  fn should_match_string_property_value_when_using_exact_matching_strategy() {
+    let res = greedily_matches(Some(r#"{"country":"IRL"}"#));
+    assert!(res.is_ok());
+
+    let ref data = object! {
+        "name"      => "John Doe",
+        "age"       => 30,
+        "country"   => "IRL"
+    };
+
+    match res {
+      Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["country"])),
+      _ => panic!("Invalid result"),
+    }
+  }
+
+  #[test]
+  fn should_match_string_property_value_when_using_contains_exact_matching_strategy() {
+    let res = greedily_matches(Some(r#"{"country"~:"GBR"}"#));
+    assert!(res.is_ok());
+
+    let ref data = object! {
+        "name"      => "John Doe",
+        "age"       => 30,
+        "country"   => "IRL GBR"
+    };
+
+    match res {
+      Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["country"])),
+      _ => panic!("Invalid result"),
+    }
+  }
+
+  #[test]
+  fn should_match_string_property_value_when_using_prefixed_matching_strategy() {
+    let res = greedily_matches(Some(r#"{"country"^:"IRL"}"#));
+    assert!(res.is_ok());
+
+    let ref data = object! {
+        "name"      => "John Doe",
+        "age"       => 30,
+        "country"   => "IRL GBR"
+    };
+
+    match res {
+      Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["country"])),
+      _ => panic!("Invalid result"),
+    }
+  }
+
+  #[test]
+  fn should_match_string_property_value_when_using_suffixed_matching_strategy() {
+    let res = greedily_matches(Some(r#"{"country"$:"GBR"}"#));
+    assert!(res.is_ok());
+
+    let ref data = object! {
+        "name"      => "John Doe",
+        "age"       => 30,
+        "country"   => "IRL GBR"
+    };
+
+    match res {
+      Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["country"])),
       _ => panic!("Invalid result"),
     }
   }

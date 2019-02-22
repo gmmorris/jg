@@ -30,6 +30,30 @@ mod cli {
     }
 
     #[test]
+    fn should_match_array_with_a_string_value_which_is_prefixed_by_a_string_value() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#".video.mimes[^="application"]"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}
+{\"video\":{\"mimes\":[\"video/mp4\"]}}\n");
+
+        assert_cmd.assert().success().stdout("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}\n");
+    }
+
+    #[test]
+    fn should_match_array_with_a_string_value_which_is_suffixed_by_a_string_value() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#".video.mimes[$="javascript"]"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}
+{\"video\":{\"mimes\":[\"video/mp4\"]}}\n");
+
+        assert_cmd.assert().success().stdout("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}\n");
+    }
+
+    #[test]
     fn should_match_array_with_exact_boolean_value() {
         let mut cmd = Command::main_binary().unwrap();
 

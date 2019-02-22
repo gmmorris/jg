@@ -8,6 +8,8 @@ pub enum JsonValueMatcher {
 pub enum JsonValueMemberMatcher {
   Exact(JsonValueMatcher),
   ContainsExact(JsonValueMatcher),
+  Prefixed(JsonValueMatcher),
+  Suffixed(JsonValueMatcher),
 }
 
 fn identify_member_matcher(
@@ -16,6 +18,8 @@ fn identify_member_matcher(
 ) -> Result<JsonValueMemberMatcher, ()> {
   match cap.name("matchingStrategy").map(|value| value.as_str()) {
     Some("~=") | Some("~:") => Ok(JsonValueMemberMatcher::ContainsExact(member)),
+    Some("^=") | Some("^:") => Ok(JsonValueMemberMatcher::Prefixed(member)),
+    Some("$=") | Some("$:") => Ok(JsonValueMemberMatcher::Suffixed(member)),
     Some("=") | Some(":") => Ok(JsonValueMemberMatcher::Exact(member)),
     _ => Err(()),
   }
