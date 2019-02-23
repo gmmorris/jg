@@ -3,6 +3,7 @@ extern crate lazy_static;
 extern crate regex;
 
 use clap::{App, Arg};
+use std::process::*;
 
 mod input;
 mod selection;
@@ -59,5 +60,10 @@ fn main() {
 
     if config.print_only_count {
         println!("{}", count);
+    }
+    if count > 0 {
+        std::process::exit(0);
+    } else {
+        std::process::exit(1);
     }
 }

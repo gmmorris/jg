@@ -26,7 +26,10 @@ mod cli {
         let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}
 {\"video\":{\"mimes\":[\"video/mp4\"]}}\n");
 
-        assert_cmd.assert().success().stdout("{\"video\":{\"mimes\":[\"video/mp4\"]}}\n");
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"video\":{\"mimes\":[\"video/mp4\"]}}\n");
     }
 
     #[test]
@@ -74,7 +77,10 @@ mod cli {
         let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}
 {\"video\":{\"opts\":[true]}}\n");
 
-        assert_cmd.assert().success().stdout("{\"video\":{\"opts\":[true]}}\n");
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"video\":{\"opts\":[true]}}\n");
     }
 
     #[test]
@@ -86,7 +92,10 @@ mod cli {
         let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"mimes\":[\"application/javascript\",\"application/x-javascript\",\"video/mp4\"]}}
 {\"video\":{\"opts\":[null]}}");
 
-        assert_cmd.assert().success().stdout("{\"video\":{\"opts\":[null]}}\n");
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"video\":{\"opts\":[null]}}\n");
     }
 
     #[test]
@@ -97,7 +106,10 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"sizes\":[480,640,880]}}\n");
 
-        assert_cmd.assert().success().stdout("{\"video\":{\"sizes\":[480,640,880]}}\n");
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"video\":{\"sizes\":[480,640,880]}}\n");
     }
 
     #[test]
@@ -106,21 +118,29 @@ mod cli {
 
         cmd.arg(r#".video.sizes[=480]"#);
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"sizes\":[480,640,880]}}
-{\"video\":{\"sizes\":[480]}}\n");
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{\"video\":{\"sizes\":[480,640,880]}}
+{\"video\":{\"sizes\":[480]}}\n",
+        );
 
-        assert_cmd.assert().success().stdout("{\"video\":{\"sizes\":[480]}}\n");
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"video\":{\"sizes\":[480]}}\n");
     }
 
-    #[test] 
+    #[test]
     fn should_match_array_with_boolean_value() {
         let mut cmd = Command::main_binary().unwrap();
 
         cmd.arg(r#".video.fields[~=true]"#);
         let mut stdin_cmd = cmd.with_stdin();
-        let     mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"fields\":[false,true]}}\n");
+        let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"fields\":[false,true]}}\n");
 
-        assert_cmd.assert().success().stdout("{\"video\":{\"fields\":[false,true]}}\n");
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"video\":{\"fields\":[false,true]}}\n");
     }
 
     #[test]
@@ -131,7 +151,10 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer("{\"video\":{\"fields\":[null]}}\n");
 
-        assert_cmd.assert().success().stdout("{\"video\":{\"fields\":[null]}}\n");
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"video\":{\"fields\":[null]}}\n");
     }
 
     #[test]
@@ -173,7 +196,7 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer("[{\"name\":\"inigo montoya\"}]\n");
 
-        assert_cmd.assert().success().stdout("");
+        assert_cmd.assert().failure();
     }
 
     #[test]

@@ -10,10 +10,15 @@ mod cli {
 
         cmd.arg("[.]");
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("[{\"name\":\"inigo montoya\"}]\n
-{\"name\":\"inigo montoya\"}\n");
+        let mut assert_cmd = stdin_cmd.buffer(
+            "[{\"name\":\"inigo montoya\"}]\n
+{\"name\":\"inigo montoya\"}\n",
+        );
 
-        assert_cmd.assert().success().stdout("[{\"name\":\"inigo montoya\"}]\n");
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("[{\"name\":\"inigo montoya\"}]\n");
     }
 
     #[test]
@@ -22,10 +27,15 @@ mod cli {
 
         cmd.arg(".list[.]");
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("{\"name\":\"inigo montoya\"}\n
-{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n");
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{\"name\":\"inigo montoya\"}\n
+{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
+        );
 
-        assert_cmd.assert().success().stdout("{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n");
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n");
     }
 
     #[test]
@@ -34,10 +44,15 @@ mod cli {
 
         cmd.arg(".list[.name]");
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("{\"name\":\"inigo montoya\",\"list\":[]}\n
-{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n");
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{\"name\":\"inigo montoya\",\"list\":[]}\n
+{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
+        );
 
-        assert_cmd.assert().success().stdout("{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n");
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n");
     }
 
     #[test]
@@ -50,16 +65,18 @@ mod cli {
 
         assert_cmd.assert().success().stdout("{\"bid_request\":{\"imp\":[{\"pmp\":{\"deals\":[{\"id\":\"BIDDER-DEAL-1\"}],\"private_auction\":0}}]}}\n");
     }
- 
+
     #[test]
     fn should_not_match_empty_array_when_selecting_identity() {
         let mut cmd = Command::main_binary().unwrap();
 
         cmd.arg(".list[.]");
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("{\"name\":\"inigo montoya\"}\n
-{\"list\":[]}\n");
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{\"name\":\"inigo montoya\"}\n
+{\"list\":[]}\n",
+        );
 
-        assert_cmd.assert().success().stdout("");
+        assert_cmd.assert().failure();
     }
 }
