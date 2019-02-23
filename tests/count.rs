@@ -37,4 +37,44 @@ mod cli {
 
         assert_cmd.assert().success().stdout("3\n");
     }
+
+    #[test]
+    fn should_stop_matching_when_max_num_flag_is_specified_and_max_is_reached() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg("-m").arg("2").arg(r#".name"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{\"name\":\"inigo montoya\"}
+{\"unamed\": null}
+{\"name\":\"INIGO montoya\"}
+{\"name\":\"inigo montoya\"}\n",
+        );
+
+        assert_cmd.assert().success().stdout(
+            "{\"name\":\"inigo montoya\"}
+{\"name\":\"INIGO montoya\"}\n",
+        );
+    }
+
+    #[test]
+    fn should_stop_matching_when_input_end_even_when_max_num_flag_is_specified_as_higher_than_input(
+    ) {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg("-m").arg("5").arg(r#".name"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{\"name\":\"inigo montoya\"}
+{\"name\":\"INIGO montoya\"}
+{\"name\":\"inigo montoya\"}\n",
+        );
+
+        assert_cmd.assert().success().stdout(
+            "{\"name\":\"inigo montoya\"}
+{\"name\":\"INIGO montoya\"}
+{\"name\":\"inigo montoya\"}\n",
+        );
+    }
+
 }

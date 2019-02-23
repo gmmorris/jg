@@ -1,7 +1,6 @@
 use json::JsonValue;
 use std::fs::File;
-use std::io::ErrorKind;
-use std::io::{self, BufRead, BufReader};
+use std::io::{self, BufRead, BufReader, Error, ErrorKind};
 use std::result::Result;
 use std::string::String;
 
@@ -10,21 +9,55 @@ use crate::selection::match_json_slice;
 pub struct Config {
   pub print_only_count: bool,
   pub ignore_case: bool,
+  pub max_num: Option<usize>,
 }
 
-pub fn match_input(input_file: Option<&str>, on_line: &Fn(String) -> Result<(), ()>) -> u64 {
+pub fn match_input(
+  input_file: Option<&str>,
+  config: &Config,
+  on_line: &Fn(String) -> Result<(), ()>,
+) -> Result<Option<u64>, ()> {
   let stdin = io::stdin();
   let input = match input_file {
     Some(input) => buffer_input_file(input),
     None => Box::new(stdin.lock()) as Box<BufRead>,
   };
 
-  input.lines().fold(0, |count, line| {
-    match on_line(line.expect("Could not read line from standard in")) {
-      Ok(_) => count + 1,
-      Err(_) => count,
-    }
-  })
+  let process =
+    |line: Result<String, Error>| on_line(line.expect("Could not read line from standard in"));
+
+  let reduce_to_count =
+    |count: Result<Option<u64>, ()>, match_result: Result<(), ()>| match match_result {
+      Ok(()) => match count {
+        Ok(Some(count)) => Ok(Some(
+          count
+            .checked_add(1)
+            .expect("failed to count matches, likely overflowed"),
+        )),
+        Ok(None) => Ok(None),
+        Err(()) => Ok(if config.print_only_count {
+          Some(1)
+        } else {
+          None
+        }),
+      },
+      Err(()) => count,
+    };
+
+  if let Some(lim) = config.max_num {
+    input
+      .lines()
+      .map(process)
+      .filter(|match_result| match_result.is_ok())
+      .take(lim)
+      .fold(Err(()), reduce_to_count)
+  } else {
+    input
+      .lines()
+      .map(process)
+      .filter(|match_result| match_result.is_ok())
+      .fold(Err(()), reduce_to_count)
+  }
 }
 
 fn buffer_input_file(input: &str) -> Box<BufRead> {
