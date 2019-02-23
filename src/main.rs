@@ -27,7 +27,8 @@ fn main() {
         .arg(
             Arg::with_name("count")
                 .short("c")
-                .help("JSON input file")
+                .long("count")
+                .help("Only a count of selected lines is written to standard output.")
         )
         .arg(
             Arg::with_name("v")
