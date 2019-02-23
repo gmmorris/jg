@@ -77,4 +77,24 @@ mod cli {
         );
     }
 
+    #[test]
+    fn should_display_the_line_number_when_line_number_flag_is_specified() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg("-n").arg(r#".name"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{\"name\":\"inigo montoya\"}
+{\"unamed\": null}
+{\"name\":\"INIGO montoya\"}
+{\"name\":\"inigo montoya\"}\n",
+        );
+
+        assert_cmd.assert().success().stdout(
+            "1:{\"name\":\"inigo montoya\"}
+3:{\"name\":\"INIGO montoya\"}
+4:{\"name\":\"inigo montoya\"}\n",
+        );
+    }
+
 }

@@ -37,6 +37,12 @@ fn main() {
                 .help("Stop reading the file after _num_ matches.")
         )
         .arg(
+            Arg::with_name("line-number")
+                .short("n")
+                .long("line-number")
+                .help("Each output line is preceded by its relative line number in the file, starting at line 1.")
+        )
+        .arg(
             Arg::with_name("count")
                 .short("c")
                 .long("count")
@@ -51,6 +57,7 @@ fn main() {
 
     let config = input::Config {
         print_only_count: matches.is_present("count"),
+        print_line_number: matches.is_present("line-number"),
         ignore_case: matches.is_present("ignore-case"),
         max_num: matches.value_of("max-count").map(|num| {
             usize::from_str_radix(num, 32).expect("an invalid -m/--max-num flag has been specified")
@@ -69,10 +76,14 @@ fn main() {
         input::match_input(
             matches.value_of("file"),
             &config,
-            &|line| match input::match_line(&matched_filters, &config, line) {
+            &|index, line| match input::match_line(&matched_filters, &config, line) {
                 Ok(matched_line) => {
                     if !config.print_only_count {
-                        println!("{}", matched_line);
+                        if config.print_line_number {
+                            println!("{}:{}", index.checked_add(1).unwrap(), matched_line);
+                        } else {
+                            println!("{}", matched_line);
+                        }
                     }
                     Ok(())
                 }

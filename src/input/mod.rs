@@ -8,6 +8,7 @@ use crate::selection::match_json_slice;
 
 pub struct Config {
   pub print_only_count: bool,
+  pub print_line_number: bool,
   pub ignore_case: bool,
   pub max_num: Option<usize>,
 }
@@ -15,7 +16,7 @@ pub struct Config {
 pub fn match_input(
   input_file: Option<&str>,
   config: &Config,
-  on_line: &Fn(String) -> Result<(), ()>,
+  on_line: &Fn(usize, String) -> Result<(), ()>,
 ) -> Result<Option<u64>, ()> {
   let stdin = io::stdin();
   let input = match input_file {
@@ -23,8 +24,9 @@ pub fn match_input(
     None => Box::new(stdin.lock()) as Box<BufRead>,
   };
 
-  let process =
-    |line: Result<String, Error>| on_line(line.expect("Could not read line from standard in"));
+  let process = |(index, line): (usize, Result<String, Error>)| {
+    on_line(index, line.expect("Could not read line from standard in"))
+  };
 
   let reduce_to_count =
     |count: Result<Option<u64>, ()>, match_result: Result<(), ()>| match match_result {
@@ -47,6 +49,7 @@ pub fn match_input(
   if let Some(lim) = config.max_num {
     input
       .lines()
+      .enumerate()
       .map(process)
       .filter(|match_result| match_result.is_ok())
       .take(lim)
@@ -54,6 +57,7 @@ pub fn match_input(
   } else {
     input
       .lines()
+      .enumerate()
       .map(process)
       .filter(|match_result| match_result.is_ok())
       .fold(Err(()), reduce_to_count)
