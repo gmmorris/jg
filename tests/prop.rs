@@ -25,7 +25,7 @@ mod cli {
         cmd.arg(".name");
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{ \"name\":\"inigo montoya\" }
+            "{\"name\":\"inigo montoya\"}
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}\n",
         );
 
@@ -60,9 +60,9 @@ mod cli {
         cmd.arg(".name");
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{ \"name\":\"inigo montoya\" }
+            "{\"name\":\"inigo montoya\"}
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
-{ \"name\":\"blanco white\" }\n",
+{\"name\":\"blanco white\"}\n",
         );
 
         assert_cmd
@@ -78,9 +78,9 @@ mod cli {
         cmd.arg(r#"{"name"}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{ \"name\":\"inigo montoya\" }
+            "{\"name\":\"inigo montoya\"}
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
-{ \"name\":\"blanco white\" }\n",
+{\"name\":\"blanco white\"}\n",
         );
 
         assert_cmd.assert().success().stdout(
@@ -96,9 +96,9 @@ mod cli {
         cmd.arg(r#"{"name":"blanco white"}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{ \"name\":\"inigo montoya\" }
+            "{\"name\":\"inigo montoya\"}
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
-{ \"name\":\"blanco white\" }\n",
+{\"name\":\"blanco white\"}\n",
         );
 
         assert_cmd
@@ -114,9 +114,9 @@ mod cli {
         cmd.arg(r#"{"name"~:"white"}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{ \"name\":\"inigo montoya\" }
+            "{\"name\":\"inigo montoya\"}
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
-{ \"name\":\"blanco white\" }\n",
+{\"name\":\"blanco white\"}\n",
         );
 
         assert_cmd
@@ -132,9 +132,9 @@ mod cli {
         cmd.arg(r#"{"name"*:"o "}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{ \"name\":\"inigo montoya\" }
+            "{\"name\":\"inigo montoya\"}
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
-{ \"name\":\"blanco white\" }\n",
+{\"name\":\"blanco white\"}\n",
         );
 
         assert_cmd.assert().success().stdout(

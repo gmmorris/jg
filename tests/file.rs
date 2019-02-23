@@ -14,7 +14,7 @@ mod cli {
             .write_all(include_str!("./input/events.json").as_bytes())
             .unwrap();
 
-        cmd.arg(".").arg("-i").arg(&tmp_file.path());
+        cmd.arg(".").arg("-f").arg(&tmp_file.path());
 
         cmd.assert()
             .success()
@@ -30,7 +30,7 @@ mod cli {
             .write_all(include_str!("./input/invalid_events.json").as_bytes())
             .unwrap();
 
-        cmd.arg(".").arg("-i").arg(&tmp_file.path());
+        cmd.arg(".").arg("-f").arg(&tmp_file.path());
 
         cmd.assert()
             .success()

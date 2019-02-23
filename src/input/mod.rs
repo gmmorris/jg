@@ -9,6 +9,7 @@ use crate::selection::match_json_slice;
 
 pub struct Config {
   pub print_only_count: bool,
+  pub ignore_case: bool,
 }
 
 pub fn match_input(input_file: Option<&str>, on_line: &Fn(String) -> Result<(), ()>) -> u64 {
@@ -39,14 +40,25 @@ fn buffer_input_file(input: &str) -> Box<BufRead> {
   }
 }
 
+pub fn in_configured_case(value: &str, config: &Config) -> Option<String> {
+  if config.ignore_case {
+    Some(value.to_lowercase())
+  } else {
+    None
+  }
+}
+
 pub fn match_line(
   matchers: &Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
   config: &Config,
   input: String,
 ) -> Result<String, ()> {
-  match json::parse(&input) {
+  let parsed_json = in_configured_case(&input, config)
+    .map(|configured_string| json::parse(&configured_string))
+    .unwrap_or(json::parse(&input));
+  match parsed_json {
     Ok(json_input) => match match_json_slice(matchers, &json_input) {
-      Ok(_) => Ok(json::stringify(json_input)),
+      Ok(_) => Ok(input),
       _ => Err(()),
     },
     _ => Err(()),

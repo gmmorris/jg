@@ -3,7 +3,6 @@ extern crate lazy_static;
 extern crate regex;
 
 use clap::{App, Arg};
-use std::process::*;
 
 mod input;
 mod selection;
@@ -19,10 +18,16 @@ fn main() {
                 .help("JSON query filter")
         )
         .arg(
-            Arg::with_name("input")
-                .short("i")
+            Arg::with_name("file")
+                .short("f")
                 .takes_value(true)
                 .help("JSON input file")
+        )
+        .arg(
+            Arg::with_name("ignore-case")
+                .short("i")
+                .long("ignore-case")
+                .help("Perform case insensitive matching. By default, **jgrep** is case sensitive.")
         )
         .arg(
             Arg::with_name("count")
@@ -37,14 +42,20 @@ fn main() {
         )
         .get_matches();
 
-    let pattern = matches.value_of("pattern").unwrap_or(".");
-
     let config = input::Config {
         print_only_count: matches.is_present("count"),
+        ignore_case: matches.is_present("ignore-case"),
     };
 
-    let matched_filters = selection::match_filters(pattern);
-    let count = input::match_input(matches.value_of("input"), &|line| match input::match_line(
+    let pattern = matches
+        .value_of("pattern")
+        .and_then(|pattern| {
+            input::in_configured_case(pattern, &config).or(Some(String::from(pattern)))
+        })
+        .unwrap_or(String::from("."));
+
+    let matched_filters = selection::match_filters(&pattern);
+    let count = input::match_input(matches.value_of("file"), &|line| match input::match_line(
         &matched_filters,
         &config,
         line,
