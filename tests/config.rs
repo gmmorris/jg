@@ -7,23 +7,20 @@ mod cli {
     // use tempfile;
 
     #[test]
-    fn should_print_out_provided_selector() {
+    fn should_print_out_count_when_flag_is_specified() {
         let mut cmd = Command::main_binary().unwrap();
 
         cmd
-            .arg("-v")
-            .arg(".");
+            .arg("-c");
 
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("{}\n");
+        let mut assert_cmd = stdin_cmd.buffer("{}
+{\"name\":\"inigo montoya\",\"list\":[]}
+{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n");
 
         assert_cmd
             .assert()
             .success()
-            .stdout(
-"filter: .
------
-{}\n"
-              );
+            .stdout("3\n");
     }
 }
