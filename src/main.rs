@@ -13,9 +13,8 @@ fn main() {
         .author("Gidi Meir Morris <gidi@gidi.io>")
         .about("jgrep searches for PATTERNS in json input, jgrep prints each json object that matches a pattern.")
         .arg(
-            Arg::with_name("filter")
+            Arg::with_name("pattern")
                 .takes_value(true)
-                .multiple(true)
                 .help("JSON query filter")
         )
         .arg(
@@ -37,13 +36,13 @@ fn main() {
         )
         .get_matches();
 
-    let filter = matches.value_of("filter").unwrap_or(".");
+    let pattern = matches.value_of("pattern").unwrap_or(".");
 
     let config = input::Config {
         print_only_count: matches.is_present("count"),
     };
 
-    let matched_filters = selection::match_filters(filter);
+    let matched_filters = selection::match_filters(pattern);
     let count = input::match_input(matches.value_of("input"), &|line| match input::match_line(
         &matched_filters,
         &config,
