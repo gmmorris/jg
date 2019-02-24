@@ -18,6 +18,12 @@ fn main() {
                 .help("JSON query filter")
         )
         .arg(
+            Arg::with_name("count")
+                .short("c")
+                .long("count")
+                .help("Only a count of selected lines is written to standard output.")
+        )
+        .arg(
             Arg::with_name("file")
                 .short("f")
                 .takes_value(true)
@@ -43,10 +49,11 @@ fn main() {
                 .help("Each output line is preceded by its relative line number in the file, starting at line 1.")
         )
         .arg(
-            Arg::with_name("count")
-                .short("c")
-                .long("count")
-                .help("Only a count of selected lines is written to standard output.")
+            Arg::with_name("quiet")
+                .short("q")
+                .long("quiet")
+                .long("silent")
+                .help("Quiet mode: suppress normal output.")
         )
         .arg(
             Arg::with_name("v")
@@ -59,6 +66,7 @@ fn main() {
         print_only_count: matches.is_present("count"),
         print_line_number: matches.is_present("line-number"),
         ignore_case: matches.is_present("ignore-case"),
+        is_quiet_mode: matches.is_present("quiet"),
         max_num: matches.value_of("max-count").map(|num| {
             usize::from_str_radix(num, 32).expect("an invalid -m/--max-num flag has been specified")
         }),
@@ -78,7 +86,7 @@ fn main() {
         &|line| input::match_line(&matched_filters, &config, line),
         &|(index, matched_count, matched_result)| {
             if let Ok(matched_line) = matched_result {
-                if !config.print_only_count {
+                if !(config.print_only_count || config.is_quiet_mode) {
                     println!(
                         "{}{}",
                         index

@@ -11,6 +11,7 @@ pub struct Config {
   pub print_only_count: bool,
   pub print_line_number: bool,
   pub ignore_case: bool,
+  pub is_quiet_mode: bool,
   pub max_num: Option<usize>,
 }
 

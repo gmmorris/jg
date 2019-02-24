@@ -36,4 +36,36 @@ mod cli {
 
         assert_cmd.assert().failure().code(predicate::eq(1));
     }
+
+    #[test]
+    fn should_only_return_exitcode_when_a_match_is_found_and_quiet_mode_flag_is_specified() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg("-q").arg(".name");
+
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{}
+{\"name\":\"inigo montoya\",\"list\":[]}
+{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
+        );
+
+        assert_cmd.assert().success().code(predicate::eq(0)).stdout("");
+    }
+
+    #[test]
+    fn should_only_return_exitcode_when_no_matches_are_found_and_quiet_mode_flag_is_specified() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg("-q").arg(".age");
+
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{}
+{\"name\":\"inigo montoya\",\"list\":[]}
+{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
+        );
+
+        assert_cmd.assert().failure().code(predicate::eq(1)).stdout("");
+    }
 }
