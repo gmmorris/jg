@@ -24,8 +24,10 @@ mod cli {
 
         cmd.arg("-^").arg(".name");
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("{\"name\":\"inigo montoya\"}
-{\"person\":{\"name\":\"John Doe\"}}");
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{\"name\":\"inigo montoya\"}
+{\"person\":{\"name\":\"John Doe\"}}",
+        );
 
         assert_cmd
             .assert()
