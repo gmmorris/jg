@@ -50,7 +50,11 @@ mod cli {
 {\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
         );
 
-        assert_cmd.assert().success().code(predicate::eq(0)).stdout("");
+        assert_cmd
+            .assert()
+            .success()
+            .code(predicate::eq(0))
+            .stdout("");
     }
 
     #[test]
@@ -66,6 +70,33 @@ mod cli {
 {\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
         );
 
-        assert_cmd.assert().failure().code(predicate::eq(1)).stdout("");
+        assert_cmd
+            .assert()
+            .failure()
+            .code(predicate::eq(1))
+            .stdout("");
+    }
+
+    #[test]
+    fn should_match_multiple_patterns_when_multiple_patterns_are_provided() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg("-e").arg(r#"{"eye_color":"yellow"}"#);
+        cmd.arg("-e").arg(r#"{"hair_color":"n/a"}"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer(
+            r#"{"name":"Luke Skywalker","hair_color":"blond","eye_color":"blue"}
+{"name":"C-3PO","hair_color":"n/a","eye_color":"yellow"}
+{"name":"R2-D2","hair_color":"n/a","eye_color":"red"}
+{"name":"Admiral Ackbar","hair_color":"n/a","eye_color":"yellow"}
+{"name":"Obi-Wan Kenobi","hair_color":"auburn, white","eye_color":"blue-gray"}"#,
+        );
+
+        assert_cmd.assert().success().stdout(
+            r#"{"name":"C-3PO","hair_color":"n/a","eye_color":"yellow"}
+{"name":"R2-D2","hair_color":"n/a","eye_color":"red"}
+{"name":"Admiral Ackbar","hair_color":"n/a","eye_color":"yellow"}
+"#
+        );
     }
 }

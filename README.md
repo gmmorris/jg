@@ -1,8 +1,7 @@
-* * *
-
-**NAME**
 
 **jgrep** — jgrep searches for _selector patterns_ in JSON input and prints each JSON object that matches the pattern.
+
+* * *
 
 **SYNOPSIS**
 
@@ -53,7 +52,10 @@ Selected lines are those _not_ matching any of the specified selector patterns.
 
 **SELECTOR PATTERNS**
 
+
+
 **EXIT CODES**
+
 In line with _grep_, the **jgrep** exit codes returns the exit status 0 if a selector match is found in the file and 1 if no selector is matched.
 
 **EXAMPLES**

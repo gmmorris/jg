@@ -73,7 +73,7 @@ pub fn in_configured_case(value: &str, config: &Config) -> Option<String> {
 }
 
 pub fn match_line(
-  matchers: &Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
+  matchers: &Vec<Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>>,
   config: &Config,
   input: String,
 ) -> Result<String, String> {
@@ -81,9 +81,12 @@ pub fn match_line(
     .map(|configured_string| json::parse(&configured_string))
     .unwrap_or(json::parse(&input));
   match parsed_json {
-    Ok(json_input) => match match_json_slice(matchers, &json_input, config.match_root_only) {
-      Ok(_) => Ok(input),
-      _ => Err(input),
+    Ok(json_input) => match matchers
+      .iter()
+      .find(|matchers| match_json_slice(matchers, &json_input, config.match_root_only).is_ok())
+    {
+      Some(_) => Ok(input),
+      None => Err(input),
     },
     _ => Err(input),
   }

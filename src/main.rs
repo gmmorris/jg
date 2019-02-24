@@ -15,7 +15,15 @@ fn main() {
         .arg(
             Arg::with_name("pattern")
                 .takes_value(true)
-                .help("JSON query filter")
+                .help("JSON selector pattern")
+        )
+        .arg(
+            Arg::with_name("patterns")
+                .multiple(true)
+                .takes_value(true)
+                .short("e")
+                .long("pattern")
+                .help("JSON selector pattern")
         )
         .arg(
             Arg::with_name("match-root")
@@ -81,14 +89,26 @@ fn main() {
         }),
     };
 
-    let pattern = matches
-        .value_of("pattern")
-        .and_then(|pattern| {
-            input::in_configured_case(pattern, &config).or(Some(String::from(pattern)))
+    let matched_filters = matches
+        .values_of("patterns")
+        .map(|values| values.collect::<Vec<_>>())
+        .or_else(|| {
+            matches
+                .value_of("pattern")
+                .or(Some("."))
+                .map(|pattern| vec![pattern])
         })
-        .unwrap_or(String::from("."));
+        .map(|patterns| {
+            patterns
+                .iter()
+                .map(|pattern| {
+                    input::in_configured_case(pattern, &config).unwrap_or(String::from(*pattern))
+                })
+                .map(|pattern| selection::match_filters(&pattern))
+                .collect::<Vec<_>>()
+        })
+        .expect("No matcher pattern has been specified");
 
-    let matched_filters = selection::match_filters(&pattern);
     let has_matched = input::match_input(
         matches.value_of("file"),
         &config,
