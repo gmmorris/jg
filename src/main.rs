@@ -56,9 +56,10 @@ fn main() {
                 .help("Quiet mode: suppress normal output.")
         )
         .arg(
-            Arg::with_name("v")
+            Arg::with_name("invert-match")
                 .short("v")
-                .help("Sets the level of verbosity")
+                .long("invert-match")
+                .help("Selected lines are those _not_ matching any of the specified selector patterns.")
         )
         .get_matches();
 
@@ -67,6 +68,7 @@ fn main() {
         print_line_number: matches.is_present("line-number"),
         ignore_case: matches.is_present("ignore-case"),
         is_quiet_mode: matches.is_present("quiet"),
+        invert_match: matches.is_present("invert-match"),
         max_num: matches.value_of("max-count").map(|num| {
             usize::from_str_radix(num, 32).expect("an invalid -m/--max-num flag has been specified")
         }),
@@ -83,7 +85,12 @@ fn main() {
     let has_matched = input::match_input(
         matches.value_of("file"),
         &config,
-        &|line| input::match_line(&matched_filters, &config, line),
+        &|line| {
+            invert_result(
+                config.invert_match,
+                input::match_line(&matched_filters, &config, line),
+            )
+        },
         &|(index, matched_count, matched_result)| {
             if let Ok(matched_line) = matched_result {
                 if !(config.print_only_count || config.is_quiet_mode) {
@@ -109,6 +116,25 @@ fn main() {
         }
         Err(_) => {
             std::process::exit(1);
+        }
+    }
+}
+
+fn invert_result<A>(should_invert: bool, result: Result<A, A>) -> Result<A, A> {
+    match result {
+        Ok(ok_res) => {
+            if should_invert {
+                Err(ok_res)
+            } else {
+                Ok(ok_res)
+            }
+        }
+        Err(err_res) => {
+            if should_invert {
+                Ok(err_res)
+            } else {
+                Err(err_res)
+            }
         }
     }
 }

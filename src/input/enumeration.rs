@@ -1,10 +1,10 @@
 pub fn enumeration(
   enumerate_all: bool,
   enumerate_oks: bool,
-) -> Box<FnMut(Result<String, ()>) -> (Option<usize>, Option<usize>, Result<String, ()>)> {
+) -> Box<FnMut(Result<String, String>) -> (Option<usize>, Option<usize>, Result<String, String>)> {
   let mut all: Option<usize> = None;
   let mut oks: Option<usize> = None;
-  Box::new(move |result: Result<String, ()>| {
+  Box::new(move |result: Result<String, String>| {
     (
       {
         if enumerate_all {

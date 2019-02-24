@@ -12,15 +12,16 @@ pub struct Config {
   pub print_line_number: bool,
   pub ignore_case: bool,
   pub is_quiet_mode: bool,
+  pub invert_match: bool,
   pub max_num: Option<usize>,
 }
 
 pub fn match_input(
   input_file: Option<&str>,
   config: &Config,
-  on_line: &Fn(String) -> Result<String, ()>,
+  on_line: &Fn(String) -> Result<String, String>,
   on_result: &Fn(
-    (Option<usize>, Option<usize>, Result<String, ()>),
+    (Option<usize>, Option<usize>, Result<String, String>),
   ) -> (Option<usize>, Option<usize>),
 ) -> Result<Option<usize>, ()> {
   let stdin = io::stdin();
@@ -74,15 +75,15 @@ pub fn match_line(
   matchers: &Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
   config: &Config,
   input: String,
-) -> Result<String, ()> {
+) -> Result<String, String> {
   let parsed_json = in_configured_case(&input, config)
     .map(|configured_string| json::parse(&configured_string))
     .unwrap_or(json::parse(&input));
   match parsed_json {
     Ok(json_input) => match match_json_slice(matchers, &json_input) {
       Ok(_) => Ok(input),
-      _ => Err(()),
+      _ => Err(input),
     },
-    _ => Err(()),
+    _ => Err(input),
   }
 }
