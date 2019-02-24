@@ -1,5 +1,5 @@
 
-**jgrep** — jgrep searches for _selector patterns_ in JSON input and prints each JSON object that matches the pattern.
+**jgrep** searches for _selector patterns_ in JSON input and prints each JSON object that matches the pattern.
 
 * * *
 
