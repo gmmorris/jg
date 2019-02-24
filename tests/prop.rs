@@ -19,6 +19,21 @@ mod cli {
     }
 
     #[test]
+    fn should_match_only_root_of_json_when_selector_is_prop_with_start_matcher() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg("-^").arg(".name");
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer("{\"name\":\"inigo montoya\"}
+{\"person\":{\"name\":\"John Doe\"}}");
+
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"name\":\"inigo montoya\"}\n");
+    }
+
+    #[test]
     fn should_match_only_json_with_prop_when_selector_is_prop() {
         let mut cmd = Command::main_binary().unwrap();
 

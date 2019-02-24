@@ -18,6 +18,12 @@ fn main() {
                 .help("JSON query filter")
         )
         .arg(
+            Arg::with_name("match-root")
+                .short("^")
+                .long("match-root")
+                .help("Select lines whose JSON input matches from the root of the object.")
+        )
+        .arg(
             Arg::with_name("count")
                 .short("c")
                 .long("count")
@@ -68,6 +74,7 @@ fn main() {
         print_line_number: matches.is_present("line-number"),
         ignore_case: matches.is_present("ignore-case"),
         is_quiet_mode: matches.is_present("quiet"),
+        match_root_only: matches.is_present("match-root"),
         invert_match: matches.is_present("invert-match"),
         max_num: matches.value_of("max-count").map(|num| {
             usize::from_str_radix(num, 32).expect("an invalid -m/--max-num flag has been specified")

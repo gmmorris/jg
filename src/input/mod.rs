@@ -13,6 +13,7 @@ pub struct Config {
   pub ignore_case: bool,
   pub is_quiet_mode: bool,
   pub invert_match: bool,
+  pub match_root_only: bool,
   pub max_num: Option<usize>,
 }
 
@@ -80,7 +81,7 @@ pub fn match_line(
     .map(|configured_string| json::parse(&configured_string))
     .unwrap_or(json::parse(&input));
   match parsed_json {
-    Ok(json_input) => match match_json_slice(matchers, &json_input) {
+    Ok(json_input) => match match_json_slice(matchers, &json_input, config.match_root_only) {
       Ok(_) => Ok(input),
       _ => Err(input),
     },
