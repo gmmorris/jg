@@ -10,13 +10,13 @@ pub fn match_json_slice(
   json_input: &JsonValue,
   match_root_only: bool,
 ) -> Result<(), ()> {
-  match json_input {
-    JsonValue::Object(_) | JsonValue::Array(_) => match matchers
-      .iter()
-      .try_fold(json_input, |json_slice, matcher| matcher(Some(&json_slice)))
-    {
-      Some(_) => Ok(()),
-      None => match (match_root_only, json_input) {
+  match matchers
+    .iter()
+    .try_fold(json_input, |json_slice, matcher| matcher(Some(&json_slice)))
+  {
+    Some(_) => Ok(()),
+    None => match json_input {
+      JsonValue::Object(_) | JsonValue::Array(_) => match (match_root_only, json_input) {
         (false, JsonValue::Object(ref object)) => match object
           .iter()
           .find(|(_, value)| match_json_slice(matchers, *value, match_root_only).is_ok())
@@ -26,8 +26,8 @@ pub fn match_json_slice(
         },
         (_, _) => Err(()),
       },
+      _ => Err(()),
     },
-    _ => Err(()),
   }
 }
 

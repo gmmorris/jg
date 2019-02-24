@@ -11,7 +11,7 @@ pub fn sequence(
       Some(json) => match json {
         JsonValue::Array(ref array) => array
           .iter()
-          .find(|member| match_json_slice(&matchers, member, false).is_ok()),
+          .find(|member| match_json_slice(&matchers, member, true).is_ok()),
         _ => None,
       },
       None => None,

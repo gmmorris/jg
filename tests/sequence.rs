@@ -5,7 +5,7 @@ mod cli {
     use assert_cmd::prelude::*;
 
     #[test]
-    fn should_match_array_with_anything_in_it() {
+    fn should_match_array_with_anything_in_it_when_identity_is_used() {
         let mut cmd = Command::main_binary().unwrap();
 
         cmd.arg("[.]");
@@ -19,6 +19,23 @@ mod cli {
             .assert()
             .success()
             .stdout("[{\"name\":\"inigo montoya\"}]\n");
+    }
+
+    #[test]
+    fn should_match_array_with_null_in_it() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg("[.]");
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer(
+            "[null]\n
+{\"name\":\"inigo montoya\"}\n",
+        );
+
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("[null]\n");
     }
 
     #[test]
@@ -47,6 +64,24 @@ mod cli {
         let mut assert_cmd = stdin_cmd.buffer(
             "{\"name\":\"inigo montoya\",\"list\":[]}\n
 {\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
+        );
+
+        assert_cmd
+            .assert()
+            .success()
+            .stdout("{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n");
+    }
+
+    #[test]
+    fn should_not_match_member_in_array_when_prop_matches_deep_object_in_member() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(".list[{\"name\":\"inigo montoya\"}]");
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer(
+            "{\"name\":\"inigo montoya\",\"list\":[]}\n
+{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n
+{\"list\":[{\"name\":\"John Doe\",\"father\":{\"name\":\"inigo montoya\"}}]}\n",
         );
 
         assert_cmd
