@@ -4,6 +4,7 @@ use std::io::{self, BufRead, BufReader, Error, ErrorKind};
 use std::result::Result;
 use std::string::String;
 
+mod enumeration;
 use crate::selection::match_json_slice;
 
 pub struct Config {
@@ -16,52 +17,35 @@ pub struct Config {
 pub fn match_input(
   input_file: Option<&str>,
   config: &Config,
-  on_line: &Fn(usize, String) -> Result<(), ()>,
-) -> Result<Option<u64>, ()> {
+  on_line: &Fn(String) -> Result<String, ()>,
+  on_result: &Fn(
+    (Option<usize>, Option<usize>, Result<String, ()>),
+  ) -> (Option<usize>, Option<usize>),
+) -> Result<Option<usize>, ()> {
   let stdin = io::stdin();
   let input = match input_file {
     Some(input) => buffer_input_file(input),
     None => Box::new(stdin.lock()) as Box<BufRead>,
   };
 
-  let process = |(index, line): (usize, Result<String, Error>)| {
-    on_line(index, line.expect("Could not read line from standard in"))
-  };
+  let mut enumerate = enumeration::enumeration(
+    config.print_line_number,
+    config.print_only_count || config.max_num.is_some(),
+  );
 
-  let reduce_to_count =
-    |count: Result<Option<u64>, ()>, match_result: Result<(), ()>| match match_result {
-      Ok(()) => match count {
-        Ok(Some(count)) => Ok(Some(
-          count
-            .checked_add(1)
-            .expect("failed to count matches, likely overflowed"),
-        )),
-        Ok(None) => Ok(None),
-        Err(()) => Ok(if config.print_only_count {
-          Some(1)
-        } else {
-          None
-        }),
-      },
-      Err(()) => count,
-    };
-
-  if let Some(lim) = config.max_num {
-    input
-      .lines()
-      .enumerate()
-      .map(process)
-      .filter(|match_result| match_result.is_ok())
-      .take(lim)
-      .fold(Err(()), reduce_to_count)
-  } else {
-    input
-      .lines()
-      .enumerate()
-      .map(process)
-      .filter(|match_result| match_result.is_ok())
-      .fold(Err(()), reduce_to_count)
-  }
+  input
+    .lines()
+    .map(|line: Result<String, Error>| on_line(line.expect("Could not read line from standard in")))
+    .map(|res| enumerate(res))
+    .filter(|(_, _, match_result)| match_result.is_ok())
+    .map(|res| on_result(res))
+    .take_while(|(_, matched_lines)| match config.max_num {
+      Some(max) => matched_lines.map(|matched| matched < max).unwrap_or(true),
+      None => true,
+    })
+    .last()
+    .map(|(_, matched_lines)| Ok(matched_lines))
+    .unwrap_or(Err(()))
 }
 
 fn buffer_input_file(input: &str) -> Box<BufRead> {

@@ -72,31 +72,31 @@ fn main() {
         .unwrap_or(String::from("."));
 
     let matched_filters = selection::match_filters(&pattern);
-    let has_matched =
-        input::match_input(
-            matches.value_of("file"),
-            &config,
-            &|index, line| match input::match_line(&matched_filters, &config, line) {
-                Ok(matched_line) => {
-                    if !config.print_only_count {
-                        if config.print_line_number {
-                            println!("{}:{}", index.checked_add(1).unwrap(), matched_line);
-                        } else {
-                            println!("{}", matched_line);
-                        }
-                    }
-                    Ok(())
-                }
-                Err(_) => Err(()),
-            },
-        );
+    let has_matched = input::match_input(
+        matches.value_of("file"),
+        &config,
+        &|line| input::match_line(&matched_filters, &config, line),
+        &|(index, matched_count, matched_result)| {
+            if let Ok(matched_line) = matched_result {
+                if !config.print_only_count {
+                    println!(
+                        "{}{}",
+                        index
+                            .map(|index| index.to_string() + ":")
+                            .unwrap_or(String::from("")),
+                        matched_line
+                    );
+                };
+            };
+            (index, matched_count)
+        },
+    );
 
     match has_matched {
-        Ok(Some(match_count)) => {
-            println!("{}", match_count);
-            std::process::exit(0);
-        }
-        Ok(None) => {
+        Ok(match_count) => {
+            if config.print_only_count {
+                println!("{}", match_count.expect("failed to count matched input"));
+            }
             std::process::exit(0);
         }
         Err(_) => {
