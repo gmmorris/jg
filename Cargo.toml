@@ -1,7 +1,7 @@
 [package]
 name = "jgrep"
 version = "0.1.0"
-authors = ["chekofif <gidi@gidi.io>"]
+authors = ["Gidi Meir Morris <gidi@gidi.io>"]
 edition = "2018"
 
 [dependencies]
