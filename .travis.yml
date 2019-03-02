@@ -18,8 +18,8 @@ before_install:
   - echo "TRAVIS_OS_NAME=$TRAVIS_OS_NAME"
   - echo "TRAVIS_RUST_VERSION=$TRAVIS_RUST_VERSION"
   - echo "TRAVIS_TAG=$TRAVIS_TAG"
-  - if [[ ("$TRAVIS_OS_NAME" == "linux") && ("$TRAVIS_RUST_VERSION" == "stable") && !(-z "$TRAVIS_TAG" ) ]]; then export LINUX_DEPLOY="true"; fi
-  - if [[ ("$TRAVIS_OS_NAME" == "osx") && ("$TRAVIS_RUST_VERSION" == "stable") && !(-z "$TRAVIS_TAG" ) ]]; then export OSX_DEPLOY="true"; fi
+  - if [[ ("$TRAVIS_OS_NAME" == "linux") && ("$TRAVIS_RUST_VERSION" == "stable") && ("$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.linux$) ]]; then export LINUX_DEPLOY="true"; fi
+  - if [[ ("$TRAVIS_OS_NAME" == "osx") && ("$TRAVIS_RUST_VERSION" == "stable") && ("$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.osx$) ]]; then export OSX_DEPLOY="true"; fi
   - echo "$OSX_DEPLOY"
   - echo "$LINUX_DEPLOY"
 
