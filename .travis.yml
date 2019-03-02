@@ -20,9 +20,11 @@ before_install:
   - echo "TRAVIS_TAG=$TRAVIS_TAG"
   - if [[ ("$TRAVIS_OS_NAME" == "linux") && ("$TRAVIS_RUST_VERSION" == "stable") && !(-z "$TRAVIS_TAG" ) ]]; then export LINUX_DEPLOY="true"; fi
   - if [[ ("$TRAVIS_OS_NAME" == "osx") && ("$TRAVIS_RUST_VERSION" == "stable") && !(-z "$TRAVIS_TAG" ) ]]; then export OSX_DEPLOY="true"; fi
+  - echo "$OSX_DEPLOY"
+  - echo "$LINUX_DEPLOY"
 
 before_deploy:
-  - gzip ./target/release/jgrep -k -f  -S .$TRAVIS_TAG-$TRAVIS_OS_NAME.gz
+  - gzip ./target/release/jgrep -k -f  -S ".$TRAVIS_TAG-$TRAVIS_OS_NAME.gz"
 
 deploy:
   - provider: releases
