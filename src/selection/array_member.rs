@@ -8,7 +8,7 @@ enum ArrayMember {
   Value(JsonValueMemberMatcher),
 }
 
-pub fn array_index(index: usize) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
+fn array_index(index: usize) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
   Box::new(move |input: Option<&JsonValue>| match input {
     Some(json) => match json {
       JsonValue::Array(ref array) => array.get(index),
