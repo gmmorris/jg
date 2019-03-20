@@ -32,10 +32,7 @@ mod cli {
 {\"name\":\"inigo montoya\"}\n",
         );
 
-        assert_cmd
-            .assert()
-            .success()
-            .stdout("[null]\n");
+        assert_cmd.assert().success().stdout("[null]\n");
     }
 
     #[test]
@@ -70,6 +67,42 @@ mod cli {
             .assert()
             .success()
             .stdout("{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n");
+    }
+
+    #[test]
+    fn should_match_members_in_array_when_root_of_pattern_is_within_the_array() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#"{"name":"John Doe"}"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer(
+            r#"{"name":"inigo montoya","list":[]}
+{"name":"John Doe"}
+{"list":[{"name":"inigo montoya"},{"name":"John Doe"}]}"#,
+        );
+
+        assert_cmd.assert().success().stdout(
+            r#"{"name":"John Doe"}
+{"list":[{"name":"inigo montoya"},{"name":"John Doe"}]}
+"#,
+        );
+    }
+
+    #[test]
+    fn should_match_array_patterns_within_arrays() {
+        let mut cmd = Command::main_binary().unwrap();
+
+        cmd.arg(r#".friends[.]"#);
+        let mut stdin_cmd = cmd.with_stdin();
+        let mut assert_cmd = stdin_cmd.buffer(
+            r#"{"name":"John Doe","friends":[]}
+{"list":[{"name":"inigo montoya","friends":[{"name":"Fezzik"}]},{"name":"John Doe"}]}"#,
+        );
+
+        assert_cmd.assert().success().stdout(
+            r#"{"list":[{"name":"inigo montoya","friends":[{"name":"Fezzik"}]},{"name":"John Doe"}]}
+"#,
+        );
     }
 
     #[test]

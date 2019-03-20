@@ -24,6 +24,13 @@ pub fn match_json_slice(
           Some(_) => Ok(()),
           None => Err(()),
         },
+        (false, JsonValue::Array(ref sequence)) => match sequence
+          .iter()
+          .find(|value| match_json_slice(matchers, *value, match_root_only).is_ok())
+        {
+          Some(_) => Ok(()),
+          None => Err(()),
+        },
         (_, _) => Err(()),
       },
       _ => Err(()),
