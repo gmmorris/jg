@@ -195,6 +195,17 @@ For example: ``` ["Know what's cool? wildcard search of a member_value value","s
 
 In line with _grep_, the **jgrep** exit codes returns the exit status 0 if a selector match is found in the file and 1 if no selector is matched.
 
+## **INSTALLATION**
+
+While we iron out the kinks we're avoiding publishing **jgrep** into public package managers.
+That said, under the _releases_ tab you will find both an _OSX_ and _Linux_ release.
+
+If you're on _OSX_ and use _Homebrew_ you can use the following script to install the latest OSX release:
+
+```
+brew install https://raw.githubusercontent.com/gmmorris/jgrep/master/packaging/homebrew.rb
+```
+
 ## **EXAMPLES**
 
 To find all JSON input with an object with property `name` on it:

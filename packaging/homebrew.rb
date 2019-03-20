@@ -1,8 +1,8 @@
 class Jgrep < Formula
   desc "A command-line JSON processor in Rust. jgrep searches for selector patterns in json input, jgrep prints each json object that matches a pattern."
   homepage "https://github.com/gmmorris/jgrep"
-  url "https://github.com/gmmorris/jgrep/releases/download/0.1.0.osx/jgrep"
-  sha256 "5fca6b86b320bbd6204d65144cdd3756e6a9e72dd283a6c00827aebe87df9964"
+  url "https://github.com/gmmorris/jgrep/archive/0.1.1.osx.tar.gz"
+  sha256 "3ae1dc0f831764eb5dfce7db5644a95f2d02e0ee423941d1b8deb9e60684fdc9"
   # depends_on "cmake" => :build
 
   def install
