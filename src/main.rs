@@ -2,14 +2,14 @@
 extern crate lazy_static;
 extern crate regex;
 
-use clap::{App, Arg};
+use clap::{crate_version, App, Arg};
 
 mod input;
 mod selection;
 
 fn main() {
     let matches = App::new("jgrep")
-        .version("0.0.1")
+        .version(crate_version!())
         .author("Gidi Meir Morris <gidi@gidi.io>")
         .about("jgrep searches for PATTERNS in json input, jgrep prints each json object that matches a pattern.")
         .arg(
