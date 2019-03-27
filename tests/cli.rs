@@ -14,8 +14,8 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
             "{}
-{\"name\":\"inigo montoya\",\"list\":[]}
-{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
+{\"name\":\"jeff goldblum\",\"list\":[]}
+{\"list\":[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]}\n",
         );
 
         assert_cmd.assert().success().code(predicate::eq(0));
@@ -30,8 +30,8 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
             "{}
-{\"name\":\"inigo montoya\",\"list\":[]}
-{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
+{\"name\":\"jeff goldblum\",\"list\":[]}
+{\"list\":[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]}\n",
         );
 
         assert_cmd.assert().failure().code(predicate::eq(1));
@@ -46,8 +46,8 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
             "{}
-{\"name\":\"inigo montoya\",\"list\":[]}
-{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
+{\"name\":\"jeff goldblum\",\"list\":[]}
+{\"list\":[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]}\n",
         );
 
         assert_cmd
@@ -66,8 +66,8 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
             "{}
-{\"name\":\"inigo montoya\",\"list\":[]}
-{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
+{\"name\":\"jeff goldblum\",\"list\":[]}
+{\"list\":[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]}\n",
         );
 
         assert_cmd

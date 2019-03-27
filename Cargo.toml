@@ -1,6 +1,6 @@
 [package]
-name = "jgrep"
-version = "0.1.2"
+name = "jg"
+version = "0.1.3"
 authors = ["Gidi Meir Morris <gidi@gidi.io>"]
 edition = "2018"
 

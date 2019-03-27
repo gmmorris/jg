@@ -10,12 +10,12 @@ mod cli {
 
         cmd.arg(".name");
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("{\"name\":\"inigo montoya\"}\n");
+        let mut assert_cmd = stdin_cmd.buffer("{\"name\":\"jeff goldblum\"}\n");
 
         assert_cmd
             .assert()
             .success()
-            .stdout("{\"name\":\"inigo montoya\"}\n");
+            .stdout("{\"name\":\"jeff goldblum\"}\n");
     }
 
     #[test]
@@ -25,14 +25,14 @@ mod cli {
         cmd.arg("-^").arg(".name");
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\"}
+            "{\"name\":\"jeff goldblum\"}
 {\"person\":{\"name\":\"John Doe\"}}",
         );
 
         assert_cmd
             .assert()
             .success()
-            .stdout("{\"name\":\"inigo montoya\"}\n");
+            .stdout("{\"name\":\"jeff goldblum\"}\n");
     }
 
     #[test]
@@ -42,14 +42,14 @@ mod cli {
         cmd.arg(".name");
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\"}
+            "{\"name\":\"jeff goldblum\"}
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}\n",
         );
 
         assert_cmd
             .assert()
             .success()
-            .stdout("{\"name\":\"inigo montoya\"}\n");
+            .stdout("{\"name\":\"jeff goldblum\"}\n");
     }
 
     #[test]
@@ -77,7 +77,7 @@ mod cli {
         cmd.arg(".name");
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\"}
+            "{\"name\":\"jeff goldblum\"}
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
 {\"name\":\"blanco white\"}\n",
         );
@@ -85,7 +85,7 @@ mod cli {
         assert_cmd
             .assert()
             .success()
-            .stdout("{\"name\":\"inigo montoya\"}\n{\"name\":\"blanco white\"}\n");
+            .stdout("{\"name\":\"jeff goldblum\"}\n{\"name\":\"blanco white\"}\n");
     }
 
     #[test]
@@ -95,13 +95,13 @@ mod cli {
         cmd.arg(r#"{"name"}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\"}
+            "{\"name\":\"jeff goldblum\"}
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
 {\"name\":\"blanco white\"}\n",
         );
 
         assert_cmd.assert().success().stdout(
-            "{\"name\":\"inigo montoya\"}
+            "{\"name\":\"jeff goldblum\"}
 {\"name\":\"blanco white\"}\n",
         );
     }
@@ -113,7 +113,7 @@ mod cli {
         cmd.arg(r#"{"name":"blanco white"}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\"}
+            "{\"name\":\"jeff goldblum\"}
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
 {\"name\":\"blanco white\"}\n",
         );
@@ -131,7 +131,7 @@ mod cli {
         cmd.arg(r#"{"name"~:"white"}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\"}
+            "{\"name\":\"jeff goldblum\"}
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
 {\"name\":\"blanco white\"}\n",
         );
@@ -146,17 +146,17 @@ mod cli {
     fn should_match_json_porperty_with_a_value_when_using_the_contains_matcher() {
         let mut cmd = Command::main_binary().unwrap();
 
-        cmd.arg(r#"{"name"*:"o "}"#);
+        cmd.arg(r#"{"name"*:"f "}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\"}
+            "{\"name\":\"jeff goldblum\"}
 {\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
-{\"name\":\"blanco white\"}\n",
+{\"name\":\"chef goldblum\"}\n",
         );
 
         assert_cmd.assert().success().stdout(
-            "{\"name\":\"inigo montoya\"}
-{\"name\":\"blanco white\"}\n",
+            "{\"name\":\"jeff goldblum\"}
+{\"name\":\"chef goldblum\"}\n",
         );
     }
 

@@ -15,8 +15,8 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
             "{}
-{\"name\":\"inigo montoya\",\"list\":[]}
-{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
+{\"name\":\"jeff goldblum\",\"list\":[]}
+{\"list\":[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]}\n",
         );
 
         assert_cmd.assert().success().stdout("3\n");
@@ -31,8 +31,8 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
             "{}
-{\"name\":\"inigo montoya\",\"list\":[]}
-{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
+{\"name\":\"jeff goldblum\",\"list\":[]}
+{\"list\":[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]}\n",
         );
 
         assert_cmd.assert().success().stdout("3\n");
@@ -45,15 +45,15 @@ mod cli {
         cmd.arg("-m").arg("2").arg(r#".name"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\"}
+            "{\"name\":\"jeff goldblum\"}
 {\"unamed\": null}
-{\"name\":\"INIGO montoya\"}
-{\"name\":\"inigo montoya\"}\n",
+{\"name\":\"JEFF goldblum\"}
+{\"name\":\"jeff goldblum\"}\n",
         );
 
         assert_cmd.assert().success().stdout(
-            "{\"name\":\"inigo montoya\"}
-{\"name\":\"INIGO montoya\"}\n",
+            "{\"name\":\"jeff goldblum\"}
+{\"name\":\"JEFF goldblum\"}\n",
         );
     }
 
@@ -65,15 +65,15 @@ mod cli {
         cmd.arg("-m").arg("5").arg(r#".name"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\"}
-{\"name\":\"INIGO montoya\"}
-{\"name\":\"inigo montoya\"}\n",
+            "{\"name\":\"jeff goldblum\"}
+{\"name\":\"JEFF goldblum\"}
+{\"name\":\"jeff goldblum\"}\n",
         );
 
         assert_cmd.assert().success().stdout(
-            "{\"name\":\"inigo montoya\"}
-{\"name\":\"INIGO montoya\"}
-{\"name\":\"inigo montoya\"}\n",
+            "{\"name\":\"jeff goldblum\"}
+{\"name\":\"JEFF goldblum\"}
+{\"name\":\"jeff goldblum\"}\n",
         );
     }
 
@@ -84,16 +84,16 @@ mod cli {
         cmd.arg("-n").arg(r#".name"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\"}
+            "{\"name\":\"jeff goldblum\"}
 {\"unamed\": null}
-{\"name\":\"INIGO montoya\"}
-{\"name\":\"inigo montoya\"}\n",
+{\"name\":\"JEFF goldblum\"}
+{\"name\":\"jeff goldblum\"}\n",
         );
 
         assert_cmd.assert().success().stdout(
-            "1:{\"name\":\"inigo montoya\"}
-3:{\"name\":\"INIGO montoya\"}
-4:{\"name\":\"inigo montoya\"}\n",
+            "1:{\"name\":\"jeff goldblum\"}
+3:{\"name\":\"JEFF goldblum\"}
+4:{\"name\":\"jeff goldblum\"}\n",
         );
     }
 

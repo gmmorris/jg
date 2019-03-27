@@ -1,15 +1,15 @@
 
-**jgrep** searches for _selector patterns_ in JSON input and prints each JSON object that matches the pattern.
+**Jeff Goldblum** AKA **json grep** AKA **jg** searches for _selector patterns_ in JSON input and prints each JSON object that matches the pattern.
 
 * * *
 
 # **SYNOPSIS**
 
-**jgrep** [**−cfimnqv**] [**−e**_pattern_] [**−f **_file_] [**−−colour**] [_pattern_]
+**jg** [**−cfimnqv**] [**−e**_pattern_] [**−f **_file_] [**−−colour**] [_pattern_]
 
 # **DESCRIPTION**
 
-The **jgrep** utility searches any given input files, selecting lines that correctly parse as valid JSON and match one or more _selector patterns_.
+The **jg** utility searches any given input files, selecting lines that correctly parse as valid JSON and match one or more _selector patterns_.
 
 The following options are available:
 
@@ -31,7 +31,7 @@ Print a brief help message.
 
 **−i**, **−−ignore-case**
 
-Perform case insensitive matching. By default, **jgrep** is case sensitive.
+Perform case insensitive matching. By default, **jg** is case sensitive.
 
 **−m** _num,_ **−−max-count**=_num_
 
@@ -43,7 +43,7 @@ Each output line is preceded by its relative line number in the file, starting a
 
 **−q**, **−−quiet**, **−−silent**
 
-Quiet mode: suppress normal output. **jgrep** will only search a file until a match has been found, making searches potentially less expensive.
+Quiet mode: suppress normal output. **jg** will only search a file until a match has been found, making searches potentially less expensive.
 This is useful if you're trying to ensure a certain match is present in the file and can rely on the Exit Code to get the result. _See **Exit Codes** section_
 
 **−v**, **−−invert-match**
@@ -52,7 +52,7 @@ Selected lines are those _not_ matching any of the specified selector patterns.
 
 ## **SELECTOR PATTERNS**
 
-_Selector Patterns_ are a way of describing a JSON structure which **jgrep** can then use to try and _match_ to the structure of JSON input from within a specified file or piped input. If **jgrep** finds that the input JSON contains the structure specified by the _selector pattern_ then the input is considered _matched_ and will be printed out.
+_Selector Patterns_ are a way of describing a JSON structure which **jg** can then use to try and _match_ to the structure of JSON input from within a specified file or piped input. If **jg** finds that the input JSON contains the structure specified by the _selector pattern_ then the input is considered _matched_ and will be printed out.
 
 For example, suppose you consume the Nasa API which returns a JSON dataset describing _How Many People Are In Space Right Now_...
 ```bash
@@ -77,11 +77,11 @@ $ curl 'http://api.open-notify.org/astros.json'
 }
 ```
 
-If you wish to use the _cli_ to verify that there are people in space, you can use **jgrep** to ensure there is a _people_ property on the object.
+If you wish to use the _cli_ to verify that there are people in space, you can use **jg** to ensure there is a _people_ property on the object.
 For that we can use the _property matcher_ which matches any JSON object who has the specified property on it.
 
 ```bash
-$ curl 'http://api.open-notify.org/astros.json' | jgrep '.people'
+$ curl 'http://api.open-notify.org/astros.json' | jg '.people'
 ```
 
 If you do so you'll see that the _cli_ prints out the JSON object, because it matches.
@@ -89,7 +89,7 @@ If you do so you'll see that the _cli_ prints out the JSON object, because it ma
 Suppose though you learn that Nasa always return the _people_ property, but it will be an empty array. Luckily, _patterns_ can be chained to describe complex structures deep within the provided input. Instead we'll ensure the people array contains an object.
 
 ```bash
-$ curl 'http://api.open-notify.org/astros.json' | jgrep '.people[.]'
+$ curl 'http://api.open-notify.org/astros.json' | jg '.people[.]'
 ```
 
 The JSON output is still getting matched, so this is pretty cool, but then you realise there's another issue which is that the _identity_ matcher, which matches any JSON value, can also match _Null_.
@@ -97,7 +97,7 @@ The JSON output is still getting matched, so this is pretty cool, but then you r
 To avoid mistaking _Null_ for a real astronaut, lets ensure that the response contains a proper JSON object with a _name_:
 
 ```bash
-$ curl 'http://api.open-notify.org/astros.json' | jgrep '.people[.name]'
+$ curl 'http://api.open-notify.org/astros.json' | jg '.people[.name]'
 ```
 
 There, that should do it.
@@ -193,17 +193,17 @@ For example: ``` ["Know what's cool? wildcard search of a member_value value","s
 
 ## **EXIT CODES**
 
-In line with _grep_, the **jgrep** exit codes returns the exit status 0 if a selector match is found in the file and 1 if no selector is matched.
+In line with _grep_, the **jg** exit codes returns the exit status 0 if a selector match is found in the file and 1 if no selector is matched.
 
 ## **INSTALLATION**
 
-While we iron out the kinks we're avoiding publishing **jgrep** into public package managers.
+While we iron out the kinks we're avoiding publishing **jg** into public package managers.
 That said, under the _releases_ tab you will find both an _OSX_ and _Linux_ release.
 
 If you're on _OSX_ and use _Homebrew_ you can use the following script to install the latest OSX release:
 
 ```
-brew install https://raw.githubusercontent.com/gmmorris/jgrep/master/packaging/homebrew.rb
+brew install https://raw.githubusercontent.com/gmmorris/jg/master/packaging/homebrew.rb
 ```
 
 ## **EXAMPLES**
@@ -211,19 +211,19 @@ brew install https://raw.githubusercontent.com/gmmorris/jgrep/master/packaging/h
 To find all JSON input with an object with property `name` on it:
 
 ```bash
-$ jgrep '.name' myfile
+$ jg '.name' myfile
 ```
 
 To find all JSON input with an object with property `fellowship`, whose value is an array and in that array there's a JSON object with the property `name` on it whose value is `Aragorn`:
 
 ```bash
-$ jgrep '.fellowship[{"name":"Aragorn"}]' myfile
+$ jg '.fellowship[{"name":"Aragorn"}]' myfile
 ```
 
 To find all JSON input with whose root object has the property `name` on it:
 
 ```bash
-$ jgrep -^ '.name' myfile
+$ jg -^ '.name' myfile
 ```
 
 To find all JSON input which does not have the property `name` anywhere in its structure:

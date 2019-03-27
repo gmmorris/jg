@@ -163,12 +163,12 @@ mod cli {
 
         cmd.arg("[0]");
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("[{\"name\":\"inigo montoya\"}]\n");
+        let mut assert_cmd = stdin_cmd.buffer("[{\"name\":\"jeff goldblum\"}]\n");
 
         assert_cmd
             .assert()
             .success()
-            .stdout("[{\"name\":\"inigo montoya\"}]\n");
+            .stdout("[{\"name\":\"jeff goldblum\"}]\n");
     }
 
     #[test]
@@ -178,14 +178,14 @@ mod cli {
         cmd.arg("[1]");
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "[{\"name\":\"inigo montoya\"}]\n
-[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]\n",
+            "[{\"name\":\"jeff goldblum\"}]\n
+[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]\n",
         );
 
         assert_cmd
             .assert()
             .success()
-            .stdout("[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]\n");
+            .stdout("[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]\n");
     }
 
     #[test]
@@ -194,7 +194,7 @@ mod cli {
 
         cmd.arg("[2]");
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("[{\"name\":\"inigo montoya\"}]\n");
+        let mut assert_cmd = stdin_cmd.buffer("[{\"name\":\"jeff goldblum\"}]\n");
 
         assert_cmd.assert().failure();
     }
@@ -205,11 +205,11 @@ mod cli {
 
         cmd.arg(".people[0]");
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("{\"people\":[{\"name\":\"inigo montoya\"}]}\n");
+        let mut assert_cmd = stdin_cmd.buffer("{\"people\":[{\"name\":\"jeff goldblum\"}]}\n");
 
         assert_cmd
             .assert()
             .success()
-            .stdout("{\"people\":[{\"name\":\"inigo montoya\"}]}\n");
+            .stdout("{\"people\":[{\"name\":\"jeff goldblum\"}]}\n");
     }
 }

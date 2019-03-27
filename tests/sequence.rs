@@ -11,14 +11,14 @@ mod cli {
         cmd.arg("[.]");
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "[{\"name\":\"inigo montoya\"}]\n
-{\"name\":\"inigo montoya\"}\n",
+            "[{\"name\":\"jeff goldblum\"}]\n
+{\"name\":\"jeff goldblum\"}\n",
         );
 
         assert_cmd
             .assert()
             .success()
-            .stdout("[{\"name\":\"inigo montoya\"}]\n");
+            .stdout("[{\"name\":\"jeff goldblum\"}]\n");
     }
 
     #[test]
@@ -29,7 +29,7 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
             "[null]\n
-{\"name\":\"inigo montoya\"}\n",
+{\"name\":\"jeff goldblum\"}\n",
         );
 
         assert_cmd.assert().success().stdout("[null]\n");
@@ -42,14 +42,14 @@ mod cli {
         cmd.arg(".list[.]");
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\"}\n
-{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
+            "{\"name\":\"jeff goldblum\"}\n
+{\"list\":[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]}\n",
         );
 
         assert_cmd
             .assert()
             .success()
-            .stdout("{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n");
+            .stdout("{\"list\":[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]}\n");
     }
 
     #[test]
@@ -59,14 +59,14 @@ mod cli {
         cmd.arg(".list[.name]");
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\",\"list\":[]}\n
-{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n",
+            "{\"name\":\"jeff goldblum\",\"list\":[]}\n
+{\"list\":[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]}\n",
         );
 
         assert_cmd
             .assert()
             .success()
-            .stdout("{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n");
+            .stdout("{\"list\":[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]}\n");
     }
 
     #[test]
@@ -76,14 +76,14 @@ mod cli {
         cmd.arg(r#"{"name":"John Doe"}"#);
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            r#"{"name":"inigo montoya","list":[]}
+            r#"{"name":"jeff goldblum","list":[]}
 {"name":"John Doe"}
-{"list":[{"name":"inigo montoya"},{"name":"John Doe"}]}"#,
+{"list":[{"name":"jeff goldblum"},{"name":"John Doe"}]}"#,
         );
 
         assert_cmd.assert().success().stdout(
             r#"{"name":"John Doe"}
-{"list":[{"name":"inigo montoya"},{"name":"John Doe"}]}
+{"list":[{"name":"jeff goldblum"},{"name":"John Doe"}]}
 "#,
         );
     }
@@ -96,11 +96,11 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
             r#"{"name":"John Doe","friends":[]}
-{"list":[{"name":"inigo montoya","friends":[{"name":"Fezzik"}]},{"name":"John Doe"}]}"#,
+{"list":[{"name":"jeff goldblum","friends":[{"name":"Fezzik"}]},{"name":"John Doe"}]}"#,
         );
 
         assert_cmd.assert().success().stdout(
-            r#"{"list":[{"name":"inigo montoya","friends":[{"name":"Fezzik"}]},{"name":"John Doe"}]}
+            r#"{"list":[{"name":"jeff goldblum","friends":[{"name":"Fezzik"}]},{"name":"John Doe"}]}
 "#,
         );
     }
@@ -109,18 +109,18 @@ mod cli {
     fn should_not_match_member_in_array_when_prop_matches_deep_object_in_member() {
         let mut cmd = Command::main_binary().unwrap();
 
-        cmd.arg(".list[{\"name\":\"inigo montoya\"}]");
+        cmd.arg(".list[{\"name\":\"jeff goldblum\"}]");
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\",\"list\":[]}\n
-{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n
-{\"list\":[{\"name\":\"John Doe\",\"father\":{\"name\":\"inigo montoya\"}}]}\n",
+            "{\"name\":\"jeff goldblum\",\"list\":[]}\n
+{\"list\":[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]}\n
+{\"list\":[{\"name\":\"John Doe\",\"father\":{\"name\":\"jeff goldblum\"}}]}\n",
         );
 
         assert_cmd
             .assert()
             .success()
-            .stdout("{\"list\":[{\"name\":\"inigo montoya\"},{\"name\":\"John Doe\"}]}\n");
+            .stdout("{\"list\":[{\"name\":\"jeff goldblum\"},{\"name\":\"John Doe\"}]}\n");
     }
 
     #[test]
@@ -141,7 +141,7 @@ mod cli {
         cmd.arg(".list[.]");
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer(
-            "{\"name\":\"inigo montoya\"}\n
+            "{\"name\":\"jeff goldblum\"}\n
 {\"list\":[]}\n",
         );
 
