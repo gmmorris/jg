@@ -1,5 +1,5 @@
 
-**Jeff Goldblum** AKA **json grep** AKA **jg** searches for _selector patterns_ in JSON input and prints each JSON object that matches the pattern.
+**Jeff Goldblum** / **jg** searches for _selector patterns_ in JSON input and prints each JSON object that matches the pattern.
 
 * * *
 
