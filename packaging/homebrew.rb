@@ -1,8 +1,8 @@
-class Jgrep < Formula
+class Jg < Formula
   desc "A command-line JSON processor in Rust. jg searches for selector patterns in json input, jg prints each json object that matches a pattern."
   homepage "https://github.com/gmmorris/jg"
-  url "https://github.com/gmmorris/jg/archive/0.1.1.osx.tar.gz"
-  sha256 "3ae1dc0f831764eb5dfce7db5644a95f2d02e0ee423941d1b8deb9e60684fdc9"
+  url "https://github.com/gmmorris/jg/archive/0.1.3.osx.tar.gz"
+  sha256 "e78ba9e05d8a44d81422b02100f0105c1b24423393b2c68783a0d703859d9caf"
   # depends_on "cmake" => :build
 
   def install
