@@ -1,47 +1,106 @@
+dist: trusty
 language: rust
-rust:
-- stable
-- beta
-- nightly
-script:
-- cargo test --verbose --release
-os:
-- linux
-- osx
+services: docker
+sudo: required
+
+env:
+  global:
+    - CRATE_NAME=jg
+
 matrix:
-  allow_failures:
-  - rust: nightly
-  fast_finish: true
+  include:
+    # Android
+    - env: TARGET=aarch64-linux-android DISABLE_TESTS=1
+    - env: TARGET=arm-linux-androideabi DISABLE_TESTS=1
+    - env: TARGET=armv7-linux-androideabi DISABLE_TESTS=1
+    - env: TARGET=i686-linux-android DISABLE_TESTS=1
+    - env: TARGET=x86_64-linux-android DISABLE_TESTS=1
+
+    # iOS
+    - env: TARGET=aarch64-apple-ios DISABLE_TESTS=1
+      os: osx
+    - env: TARGET=armv7-apple-ios DISABLE_TESTS=1
+      os: osx
+    - env: TARGET=armv7s-apple-ios DISABLE_TESTS=1
+      os: osx
+    - env: TARGET=i386-apple-ios DISABLE_TESTS=1
+      os: osx
+    - env: TARGET=x86_64-apple-ios DISABLE_TESTS=1
+      os: osx
+
+    # Linux
+    - env: TARGET=aarch64-unknown-linux-gnu
+    - env: TARGET=arm-unknown-linux-gnueabi
+    - env: TARGET=armv7-unknown-linux-gnueabihf
+    - env: TARGET=i686-unknown-linux-gnu
+    - env: TARGET=i686-unknown-linux-musl
+    - env: TARGET=mips-unknown-linux-gnu
+    - env: TARGET=mips64-unknown-linux-gnuabi64
+    - env: TARGET=mips64el-unknown-linux-gnuabi64
+    - env: TARGET=mipsel-unknown-linux-gnu
+    - env: TARGET=powerpc-unknown-linux-gnu
+    - env: TARGET=powerpc64-unknown-linux-gnu
+    - env: TARGET=powerpc64le-unknown-linux-gnu
+    - env: TARGET=s390x-unknown-linux-gnu DISABLE_TESTS=1
+    - env: TARGET=x86_64-unknown-linux-gnu
+    - env: TARGET=x86_64-unknown-linux-musl
+
+    # OSX
+    - env: TARGET=i686-apple-darwin
+      os: osx
+    - env: TARGET=x86_64-apple-darwin
+      os: osx
+
+    # *BSD
+    - env: TARGET=i686-unknown-freebsd DISABLE_TESTS=1
+    - env: TARGET=x86_64-unknown-freebsd DISABLE_TESTS=1
+    - env: TARGET=x86_64-unknown-netbsd DISABLE_TESTS=1
+
+    # Testing other channels
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: nightly
+    - env: TARGET=x86_64-apple-darwin
+      os: osx
+      rust: nightly
 
 before_install:
-  - echo "ENV:"
-  - echo "TRAVIS_OS_NAME=$TRAVIS_OS_NAME"
-  - echo "TRAVIS_RUST_VERSION=$TRAVIS_RUST_VERSION"
-  - echo "TRAVIS_TAG=$TRAVIS_TAG"
-  - if [[ ("$TRAVIS_OS_NAME" == "linux") && ("$TRAVIS_RUST_VERSION" == "stable") && ("$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.linux$) ]]; then export LINUX_DEPLOY="true"; fi
-  - if [[ ("$TRAVIS_OS_NAME" == "osx") && ("$TRAVIS_RUST_VERSION" == "stable") && ("$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.osx$) ]]; then export OSX_DEPLOY="true"; fi
-  - echo "$OSX_DEPLOY"
-  - echo "$LINUX_DEPLOY"
+  - set -e
+  - rustup self update
+
+install:
+  - sh ci/install.sh
+  - source ~/.cargo/env || true
+
+script:
+  - bash ci/script.sh
+
+after_script: set +e
+
+before_deploy:
+  - sh ci/before_deploy.sh
 
 deploy:
-  - provider: releases
-    api_key:
-      secure: ve4sGZMVasUuME9tvaG0V3fjbJAg+of7ZqsGlLknTQ8svqR4b9NFPZcJoeCZypwiFTOZOvukKW7L+icW/2nm0fpeXoAGq7nEQwsns19Z6VSw+VuRIWsX34vJYz0tOc5uTm+ZfFOBwkiXlXoxaDLh7VYPccmJCb5zaumNESaLOe+ZQ7FbetyZe6+yHsZoapsteveY3hu3wp0jL59vToQvFX1JXlvrzD7uvp7RbfqbqjwY9zqYYIgpzDz5XcaG1yV5ffF+5MXvi9pjnlPwrzn7TRdoslOcxvndmJXwZOgoXRNVu+FZsqVmJpcAjPB/8193gD2bj2Rv4DaMvlM1YdZ7UBv6OnoV3uu2ckBB32k3IzOOi+q47MU4ekN06Oxo2afSs9r9wDW8EFrX8PhFhqjx5DrwAfhBMNk7OyncQ/sV6T7UpoHdv+eeknH/ls8/SgDcrshfAlDZIdAqsYFD06M2zx4EOd9h9mgsgWDmN0ogG8w5PCANusxpDXsz4Ge7awP4SFpwddvzwfChwOqYYVe80RHAP9PGZtt4cB0tL+jWneYFNTXJh2hbBvrXV434Td65315FfWZrdI+bPkD/ike3budUsLgr1AeDMn2T4NWXOf+AIIeFUEjk99wW398qPJzwQJlqtwltkt6k+oIc2oc0MG0+JIjSdD390RFCzOQ3N88=
-    file:
-      - "./target/release/jg"
-    skip_cleanup: true
-    on:
-      condition: $LINUX_DEPLOY = "true"
-      tags: true
-      repo: gmmorris/jg
-  - provider: releases
-    api_key: "GITHUB API KEY"
-    api_key:
-      secure: ve4sGZMVasUuME9tvaG0V3fjbJAg+of7ZqsGlLknTQ8svqR4b9NFPZcJoeCZypwiFTOZOvukKW7L+icW/2nm0fpeXoAGq7nEQwsns19Z6VSw+VuRIWsX34vJYz0tOc5uTm+ZfFOBwkiXlXoxaDLh7VYPccmJCb5zaumNESaLOe+ZQ7FbetyZe6+yHsZoapsteveY3hu3wp0jL59vToQvFX1JXlvrzD7uvp7RbfqbqjwY9zqYYIgpzDz5XcaG1yV5ffF+5MXvi9pjnlPwrzn7TRdoslOcxvndmJXwZOgoXRNVu+FZsqVmJpcAjPB/8193gD2bj2Rv4DaMvlM1YdZ7UBv6OnoV3uu2ckBB32k3IzOOi+q47MU4ekN06Oxo2afSs9r9wDW8EFrX8PhFhqjx5DrwAfhBMNk7OyncQ/sV6T7UpoHdv+eeknH/ls8/SgDcrshfAlDZIdAqsYFD06M2zx4EOd9h9mgsgWDmN0ogG8w5PCANusxpDXsz4Ge7awP4SFpwddvzwfChwOqYYVe80RHAP9PGZtt4cB0tL+jWneYFNTXJh2hbBvrXV434Td65315FfWZrdI+bPkD/ike3budUsLgr1AeDMn2T4NWXOf+AIIeFUEjk99wW398qPJzwQJlqtwltkt6k+oIc2oc0MG0+JIjSdD390RFCzOQ3N88=
-    file:
-      - "./target/release/jg"
-    skip_cleanup: true
-    on:
-      condition: $OSX_DEPLOY = "true"
-      tags: true
-      repo: gmmorris/jg
+  api_key:
+    secure: ve4sGZMVasUuME9tvaG0V3fjbJAg+of7ZqsGlLknTQ8svqR4b9NFPZcJoeCZypwiFTOZOvukKW7L+icW/2nm0fpeXoAGq7nEQwsns19Z6VSw+VuRIWsX34vJYz0tOc5uTm+ZfFOBwkiXlXoxaDLh7VYPccmJCb5zaumNESaLOe+ZQ7FbetyZe6+yHsZoapsteveY3hu3wp0jL59vToQvFX1JXlvrzD7uvp7RbfqbqjwY9zqYYIgpzDz5XcaG1yV5ffF+5MXvi9pjnlPwrzn7TRdoslOcxvndmJXwZOgoXRNVu+FZsqVmJpcAjPB/8193gD2bj2Rv4DaMvlM1YdZ7UBv6OnoV3uu2ckBB32k3IzOOi+q47MU4ekN06Oxo2afSs9r9wDW8EFrX8PhFhqjx5DrwAfhBMNk7OyncQ/sV6T7UpoHdv+eeknH/ls8/SgDcrshfAlDZIdAqsYFD06M2zx4EOd9h9mgsgWDmN0ogG8w5PCANusxpDXsz4Ge7awP4SFpwddvzwfChwOqYYVe80RHAP9PGZtt4cB0tL+jWneYFNTXJh2hbBvrXV434Td65315FfWZrdI+bPkD/ike3budUsLgr1AeDMn2T4NWXOf+AIIeFUEjk99wW398qPJzwQJlqtwltkt6k+oIc2oc0MG0+JIjSdD390RFCzOQ3N88=
+  file_glob: true
+  file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.*
+  on:
+    condition: $TRAVIS_RUST_VERSION = stable
+    tags: true
+  provider: releases
+  skip_cleanup: true
+
+cache: cargo
+before_cache:
+  # Travis can't cache files that are not readable by "others"
+  - chmod -R a+r $HOME/.cargo
+
+branches:
+  only:
+    # release tags
+    - /^v\d+\.\d+\.\d+.*$/
+    - master
+
+notifications:
+  email:
+    on_success: never
