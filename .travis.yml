@@ -9,59 +9,33 @@ env:
 
 matrix:
   include:
-    # Android
-    - env: TARGET=aarch64-linux-android DISABLE_TESTS=1
-    - env: TARGET=arm-linux-androideabi DISABLE_TESTS=1
-    - env: TARGET=armv7-linux-androideabi DISABLE_TESTS=1
-    - env: TARGET=i686-linux-android DISABLE_TESTS=1
-    - env: TARGET=x86_64-linux-android DISABLE_TESTS=1
-
-    # iOS
-    - env: TARGET=aarch64-apple-ios DISABLE_TESTS=1
-      os: osx
-    - env: TARGET=armv7-apple-ios DISABLE_TESTS=1
-      os: osx
-    - env: TARGET=armv7s-apple-ios DISABLE_TESTS=1
-      os: osx
-    - env: TARGET=i386-apple-ios DISABLE_TESTS=1
-      os: osx
-    - env: TARGET=x86_64-apple-ios DISABLE_TESTS=1
-      os: osx
-
-    # Linux
-    - env: TARGET=aarch64-unknown-linux-gnu
-    - env: TARGET=arm-unknown-linux-gnueabi
-    - env: TARGET=armv7-unknown-linux-gnueabihf
-    - env: TARGET=i686-unknown-linux-gnu
-    - env: TARGET=i686-unknown-linux-musl
-    - env: TARGET=mips-unknown-linux-gnu
-    - env: TARGET=mips64-unknown-linux-gnuabi64
-    - env: TARGET=mips64el-unknown-linux-gnuabi64
-    - env: TARGET=mipsel-unknown-linux-gnu
-    - env: TARGET=powerpc-unknown-linux-gnu
-    - env: TARGET=powerpc64-unknown-linux-gnu
-    - env: TARGET=powerpc64le-unknown-linux-gnu
-    - env: TARGET=s390x-unknown-linux-gnu DISABLE_TESTS=1
-    - env: TARGET=x86_64-unknown-linux-gnu
-    - env: TARGET=x86_64-unknown-linux-musl
-
-    # OSX
-    - env: TARGET=i686-apple-darwin
-      os: osx
-    - env: TARGET=x86_64-apple-darwin
-      os: osx
-
-    # *BSD
-    - env: TARGET=i686-unknown-freebsd DISABLE_TESTS=1
-    - env: TARGET=x86_64-unknown-freebsd DISABLE_TESTS=1
-    - env: TARGET=x86_64-unknown-netbsd DISABLE_TESTS=1
-
-    # Testing other channels
-    - env: TARGET=x86_64-unknown-linux-gnu
-      rust: nightly
-    - env: TARGET=x86_64-apple-darwin
-      os: osx
-      rust: nightly
+    # Nightly channel.
+    - os: linux
+      rust: stable
+      env: TARGET=i686-unknown-linux-musl
+    - os: linux
+      rust: stable
+      env: TARGET=x86_64-unknown-linux-musl
+    - os: osx
+      rust: stable
+      env: TARGET=x86_64-apple-darwin
+    - os: linux
+      rust: stable
+      env: TARGET=arm-unknown-linux-gnueabihf GCC_VERSION=4.8
+      addons:
+        apt:
+          packages:
+          - gcc-4.8-arm-linux-gnueabihf
+          - binutils-arm-linux-gnueabihf
+          - libc6-armhf-cross
+          - libc6-dev-armhf-cross
+    # Beta channel to make sure there are no regressions
+    - os: linux
+      rust: beta
+      env: TARGET=x86_64-unknown-linux-musl
+    - os: linux
+      rust: beta
+      env: TARGET=x86_64-unknown-linux-gnu
 
 before_install:
   - set -e
@@ -83,9 +57,10 @@ deploy:
   api_key:
     secure: ve4sGZMVasUuME9tvaG0V3fjbJAg+of7ZqsGlLknTQ8svqR4b9NFPZcJoeCZypwiFTOZOvukKW7L+icW/2nm0fpeXoAGq7nEQwsns19Z6VSw+VuRIWsX34vJYz0tOc5uTm+ZfFOBwkiXlXoxaDLh7VYPccmJCb5zaumNESaLOe+ZQ7FbetyZe6+yHsZoapsteveY3hu3wp0jL59vToQvFX1JXlvrzD7uvp7RbfqbqjwY9zqYYIgpzDz5XcaG1yV5ffF+5MXvi9pjnlPwrzn7TRdoslOcxvndmJXwZOgoXRNVu+FZsqVmJpcAjPB/8193gD2bj2Rv4DaMvlM1YdZ7UBv6OnoV3uu2ckBB32k3IzOOi+q47MU4ekN06Oxo2afSs9r9wDW8EFrX8PhFhqjx5DrwAfhBMNk7OyncQ/sV6T7UpoHdv+eeknH/ls8/SgDcrshfAlDZIdAqsYFD06M2zx4EOd9h9mgsgWDmN0ogG8w5PCANusxpDXsz4Ge7awP4SFpwddvzwfChwOqYYVe80RHAP9PGZtt4cB0tL+jWneYFNTXJh2hbBvrXV434Td65315FfWZrdI+bPkD/ike3budUsLgr1AeDMn2T4NWXOf+AIIeFUEjk99wW398qPJzwQJlqtwltkt6k+oIc2oc0MG0+JIjSdD390RFCzOQ3N88=
   file_glob: true
-  file: $CRATE_NAME-$TRAVIS_TAG-$TARGET.*
+  file: ${CRATE_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz
   on:
     condition: $TRAVIS_RUST_VERSION = stable
+    branch: master
     tags: true
   provider: releases
   skip_cleanup: true
