@@ -30,6 +30,10 @@ matrix:
 before_install:
   - set -e
   - rustup self update
+  - echo "ENV:"
+  - echo "TRAVIS_OS_NAME=$TRAVIS_OS_NAME"
+  - echo "TRAVIS_RUST_VERSION=$TRAVIS_RUST_VERSION"
+  - echo "TRAVIS_TAG=$TRAVIS_TAG"
 
 install:
   - sh ci/install.sh
@@ -63,7 +67,7 @@ before_cache:
 branches:
   only:
     # release tags
-    - /^v\d+\.\d+\.\d+.*$/
+    - /^\d+\.\d+\.\d+.*$/
     - master
 
 notifications:
