@@ -1,5 +1,8 @@
 
-**Jeff Goldblum** / **jg** searches for _selector patterns_ in JSON input and prints each JSON object that matches the pattern.
+**Jeff Goldblum** / **jg** is a command-line JSON processor which searches for structural patterns in json input and prints each json object that matches the pattern.
+
+Read all about the reasoning behind the **jg**'s creation here:
+https://gidi.io/2019/03/01/structured-greping-of-structured-logging-using-grep-for-json.html
 
 * * *
 
