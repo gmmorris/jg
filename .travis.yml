@@ -21,11 +21,6 @@ matrix:
     - env: TARGET=x86_64-apple-darwin
       os: osx
 
-    # *BSD
-    - env: TARGET=i686-unknown-freebsd
-    - env: TARGET=x86_64-unknown-freebsd
-    - env: TARGET=x86_64-unknown-netbsd
-
     # Beta channel to make sure there are no regressions
     - os: linux
       rust: beta
