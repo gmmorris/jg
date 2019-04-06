@@ -13,7 +13,7 @@ matrix:
     - env: TARGET=i686-unknown-linux-gnu
     - env: TARGET=i686-unknown-linux-musl
     - env: TARGET=x86_64-unknown-linux-gnu
-    - env: TARGET=x86_64-unknown-linux-musl
+    - env: TARGET=x86_64-unknown-linux-musl RPMISE=x86_64
 
     # OSX
     - env: TARGET=i686-apple-darwin
@@ -53,7 +53,7 @@ deploy:
   api_key:
     secure: ve4sGZMVasUuME9tvaG0V3fjbJAg+of7ZqsGlLknTQ8svqR4b9NFPZcJoeCZypwiFTOZOvukKW7L+icW/2nm0fpeXoAGq7nEQwsns19Z6VSw+VuRIWsX34vJYz0tOc5uTm+ZfFOBwkiXlXoxaDLh7VYPccmJCb5zaumNESaLOe+ZQ7FbetyZe6+yHsZoapsteveY3hu3wp0jL59vToQvFX1JXlvrzD7uvp7RbfqbqjwY9zqYYIgpzDz5XcaG1yV5ffF+5MXvi9pjnlPwrzn7TRdoslOcxvndmJXwZOgoXRNVu+FZsqVmJpcAjPB/8193gD2bj2Rv4DaMvlM1YdZ7UBv6OnoV3uu2ckBB32k3IzOOi+q47MU4ekN06Oxo2afSs9r9wDW8EFrX8PhFhqjx5DrwAfhBMNk7OyncQ/sV6T7UpoHdv+eeknH/ls8/SgDcrshfAlDZIdAqsYFD06M2zx4EOd9h9mgsgWDmN0ogG8w5PCANusxpDXsz4Ge7awP4SFpwddvzwfChwOqYYVe80RHAP9PGZtt4cB0tL+jWneYFNTXJh2hbBvrXV434Td65315FfWZrdI+bPkD/ike3budUsLgr1AeDMn2T4NWXOf+AIIeFUEjk99wW398qPJzwQJlqtwltkt6k+oIc2oc0MG0+JIjSdD390RFCzOQ3N88=
   file_glob: true
-  file: ${CRATE_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz
+  file: ${CRATE_NAME}-${TRAVIS_TAG}-${TARGET}.*(tar.gz|rpm)
   on:
     condition: $TRAVIS_RUST_VERSION = stable
     branch: master

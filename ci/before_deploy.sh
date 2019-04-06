@@ -26,6 +26,16 @@ main() {
     cd $src
 
     rm -rf $stage
+
+    if [ -z "$RPMISE" ]
+    then
+        echo "No RPMising configured"
+    else
+        echo "RPMising..."
+        cargo rpm build -v
+        echo "Moving RPM from target/$TARGET/release/rpmbuild/RPMS/$RPMISE/$CRATE_NAME-$TRAVIS_TAG-1.$RPMISE.rpm to $src/$CRATE_NAME-$TRAVIS_TAG-$TARGET.rpm"
+        cp target/$TARGET/release/rpmbuild/RPMS/$RPMISE/$CRATE_NAME-$TRAVIS_TAG-1.$RPMISE.rpm $src/$CRATE_NAME-$TRAVIS_TAG-$TARGET.rpm
+    fi
 }
 
 main
