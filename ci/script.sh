@@ -3,13 +3,6 @@ set -ex
 main() {
     cross build --target $TARGET --release
     
-    if [ -z "$RPMISE" ]
-    then
-        echo "No RPMising configured"
-    else
-        cargo install cargo-rpm
-    fi
-
     if [ ! -z $DISABLE_TESTS ]; then
         return
     fi
