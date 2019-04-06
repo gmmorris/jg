@@ -32,7 +32,6 @@ main() {
         echo "No RPMising configured"
     else
         echo "RPMising..."
-        apt-get install rpm
         cargo install cargo-rpm
         cargo rpm build -v
         echo "Moving RPM from target/$TARGET/release/rpmbuild/RPMS/$RPMISE/$CRATE_NAME-$TRAVIS_TAG-1.$RPMISE.rpm to $src/$CRATE_NAME-$TRAVIS_TAG-$TARGET.rpm"
