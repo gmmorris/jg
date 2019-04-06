@@ -36,7 +36,11 @@ before_install:
   - echo "TRAVIS_OS_NAME=$TRAVIS_OS_NAME"
   - echo "TRAVIS_RUST_VERSION=$TRAVIS_RUST_VERSION"
   - echo "TRAVIS_TAG=$TRAVIS_TAG"
-  - sudo apt-get install rpm
+
+addons:
+  apt:
+    packages:
+    - rpm
 
 install:
   - sh ci/install.sh
