@@ -14,3 +14,9 @@ tempfile = "3.0.5"
 predicates = "1.0"
 lazy_static = "1.2.0"
 regex = "1.1.0"
+
+[package.metadata.rpm.cargo]
+buildflags = ["--release"]
+
+[package.metadata.rpm.targets]
+jg = { path = "/usr/bin/jg" }
