@@ -15,25 +15,22 @@ pub fn match_json_slice(
     .try_fold(json_input, |json_slice, matcher| matcher(Some(&json_slice)))
   {
     Some(_) => Ok(()),
-    None => match json_input {
-      JsonValue::Object(_) | JsonValue::Array(_) => match (match_root_only, json_input) {
-        (false, JsonValue::Object(ref object)) => match object
-          .iter()
-          .find(|(_, value)| match_json_slice(matchers, *value, match_root_only).is_ok())
-        {
-          Some(_) => Ok(()),
-          None => Err(()),
-        },
-        (false, JsonValue::Array(ref sequence)) => match sequence
-          .iter()
-          .find(|value| match_json_slice(matchers, *value, match_root_only).is_ok())
-        {
-          Some(_) => Ok(()),
-          None => Err(()),
-        },
-        (_, _) => Err(()),
+    None => match (match_root_only, json_input) {
+      (false, JsonValue::Object(ref object)) => match object
+        .iter()
+        .find(|(_, value)| match_json_slice(matchers, *value, match_root_only).is_ok())
+      {
+        Some(_) => Ok(()),
+        None => Err(()),
       },
-      _ => Err(()),
+      (false, JsonValue::Array(ref sequence)) => match sequence
+        .iter()
+        .find(|value| match_json_slice(matchers, *value, match_root_only).is_ok())
+      {
+        Some(_) => Ok(()),
+        None => Err(()),
+      },
+      (_, _) => Err(()),
     },
   }
 }
