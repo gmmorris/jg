@@ -8,7 +8,7 @@ https://gidi.io/2019/03/01/structured-greping-of-structured-logging-using-grep-f
 
 # **SYNOPSIS**
 
-**jg** [**−cfimnqv**] [**−e**_pattern_] [**−f **_file_] [**−−colour**] [_pattern_]
+**jg** [**−cfimnqv**] [**−e** _pattern_] [**−f **_file_] [_pattern_]
 
 # **DESCRIPTION**
 
