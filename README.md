@@ -1,3 +1,4 @@
+[![Travis shield](https://travis-ci.org/gmmorris/jg.svg)](https://travis-ci.org/gmmorris/jg)
 
 **Jeff Goldblum** / **jg** is a command-line JSON processor which searches for structural patterns in json input and prints each json object that matches the pattern.
 
