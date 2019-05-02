@@ -9,6 +9,11 @@ keywords = ["json", "grep", "search", "pattern", "selector"]
 categories = ["command-line-utilities", "text-processing"]
 exclude = ["HomebrewFormula"]
 
+[[bin]]
+bench = false
+path = "src/main.rs"
+name = "jg"
+
 [dependencies]
 clap = "2.32.0"
 json = "0.11.13"
