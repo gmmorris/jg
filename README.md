@@ -21,9 +21,9 @@ The following options are available:
 
 Only a count of selected lines is written to standard output.
 
-<!-- **−−colour**
+**−−color**
 
-Mark up the matching text with the expression stored in GREP_COLOR environment variable. The possible values of when can be ‘never', ‘always' or ‘auto'. -->
+Mark up the JSON shapes matching the _selector pattern_ when printing the output.
 
 **−e** _pattern_
 

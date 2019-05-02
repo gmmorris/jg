@@ -5,30 +5,32 @@ mod prop;
 mod sequence;
 mod value_matchers;
 
-pub fn match_json_slice(
-  matchers: &Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>,
-  json_input: &JsonValue,
+pub fn match_json_slice<'a>(
+  matchers: &Vec<Box<Fn(Option<&'a JsonValue>) -> Option<&'a JsonValue>>>,
+  json_input: &'a JsonValue,
   match_root_only: bool,
-) -> Result<(), ()> {
+) -> Result<&'a JsonValue, ()> {
   match matchers
     .iter()
     .try_fold(json_input, |json_slice, matcher| matcher(Some(&json_slice)))
   {
-    Some(_) => Ok(()),
+    Some(matching_slice) => Ok(matching_slice),
     None => match (match_root_only, json_input) {
       (false, JsonValue::Object(ref object)) => match object
         .iter()
-        .find(|(_, value)| match_json_slice(matchers, *value, match_root_only).is_ok())
+        .map(|(_, value)| match_json_slice(matchers, value, match_root_only))
+        .find(|res| res.is_ok())
       {
-        Some(_) => Ok(()),
-        None => Err(()),
+        Some(Ok(matching_slice)) => Ok(matching_slice),
+        _ => Err(()),
       },
       (false, JsonValue::Array(ref sequence)) => match sequence
         .iter()
-        .find(|value| match_json_slice(matchers, *value, match_root_only).is_ok())
+        .map(|value| match_json_slice(matchers, value, match_root_only))
+        .find(|res| res.is_ok())
       {
-        Some(_) => Ok(()),
-        None => Err(()),
+        Some(Ok(matching_slice)) => Ok(matching_slice),
+        _ => Err(()),
       },
       (_, _) => Err(()),
     },

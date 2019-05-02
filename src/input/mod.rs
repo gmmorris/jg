@@ -3,6 +3,8 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Error, ErrorKind};
 use std::result::Result;
 use std::string::String;
+use colored::*;
+use json_highlight_writer::highlight_with_colors;
 
 mod enumeration;
 use crate::selection::match_json_slice;
@@ -10,6 +12,7 @@ use crate::selection::match_json_slice;
 pub struct Config {
   pub print_only_count: bool,
   pub print_line_number: bool,
+  pub highlight_matches: bool,
   pub ignore_case: bool,
   pub is_quiet_mode: bool,
   pub invert_match: bool,
@@ -17,7 +20,7 @@ pub struct Config {
   pub max_num: Option<usize>,
 }
 
-pub fn match_input(
+pub fn match_input<'a>(
   input_file: Option<&str>,
   config: &Config,
   on_line: &Fn(String) -> Result<String, String>,
@@ -81,12 +84,35 @@ pub fn match_line(
     .map(|configured_string| json::parse(&configured_string))
     .unwrap_or(json::parse(&input));
   match parsed_json {
-    Ok(json_input) => match matchers
-      .iter()
-      .find(|matchers| match_json_slice(matchers, &json_input, config.match_root_only).is_ok())
-    {
-      Some(_) => Ok(input),
-      None => Err(input),
+    Ok(json_input) => {
+      let matches : Vec<&JsonValue> = matchers
+        .iter()
+        .map(|selector| match_json_slice(selector, &json_input, config.match_root_only))
+        .filter_map(Result::ok)
+        .collect();
+      
+      if matches.is_empty() {
+          Err(input)
+      } else {
+          if config.highlight_matches {
+            Ok(
+              highlight_with_colors(
+                &json_input,
+                matches,
+                vec![
+                  Color::Red,
+                  Color::Blue,
+                  Color::Yellow,
+                  Color::Green,
+                  Color::Magenta,
+                  Color::Cyan
+                ]
+              )
+            )
+          } else {
+            Ok(input)
+          }
+      }
     },
     _ => Err(input),
   }

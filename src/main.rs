@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
 extern crate regex;
+extern crate json_highlight_writer;
 
 use clap::{crate_version, App, Arg};
 
@@ -30,6 +31,11 @@ fn main() {
                 .short("^")
                 .long("match-root")
                 .help("Select lines whose JSON input matches from the root of the object.")
+        )
+        .arg(
+            Arg::with_name("color")
+                .long("color")
+                .help("Mark up the JSON shapes matching the selector pattern when printing the output.")
         )
         .arg(
             Arg::with_name("count")
@@ -79,6 +85,7 @@ fn main() {
 
     let config = input::Config {
         print_only_count: matches.is_present("count"),
+        highlight_matches: matches.is_present("color"),
         print_line_number: matches.is_present("line-number"),
         ignore_case: matches.is_present("ignore-case"),
         is_quiet_mode: matches.is_present("quiet"),
