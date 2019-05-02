@@ -9,7 +9,7 @@ mod cli {
     fn should_color_matching_json() {
         let mut cmd = Command::main_binary().unwrap();
 
-        cmd.arg("--color");
+        cmd.arg("--color=always");
         cmd.arg(".name");
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer("{\"name\":\"jeff goldblum\"}\n");
@@ -32,7 +32,7 @@ mod cli {
     fn should_color_multiple_matching_json() {
         let mut cmd = Command::main_binary().unwrap();
 
-        cmd.arg("--color");
+        cmd.arg("--colour=always-cycle");
         cmd.arg("-e").arg(r#".name"#);
         cmd.arg("-e").arg(r#".middle_name"#);
 

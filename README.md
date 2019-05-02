@@ -21,9 +21,11 @@ The following options are available:
 
 Only a count of selected lines is written to standard output.
 
-**−−color**
-
-Mark up the JSON shapes matching the _selector pattern_ when printing the output.
+**−−color=_when_**, **−−colour=_when_**
+Surround the matched JSON input with escape sequences to display them in colour on the terminal.
+_when_ is never, always, always-cycle, auto, or auto-cycle.
+The _always_ and _auto_ options use a single default colour to highlight matches, the difference being t hat _auto_ only highlights content when output is to the terminal.
+The _always-cycle_ and _auto-cycle_ options will cycle through a list of colours using a different colour for each match.
 
 **−e** _pattern_
 

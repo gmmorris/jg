@@ -4,15 +4,21 @@ use std::io::{self, BufRead, BufReader, Error, ErrorKind};
 use std::result::Result;
 use std::string::String;
 use colored::*;
-use json_highlight_writer::highlight_with_colors;
+use json_highlight_writer::{highlight, highlight_with_colors};
 
 mod enumeration;
 use crate::selection::match_json_slice;
 
+pub enum HighlightMatches {
+  Never,
+  Cycle,
+  Single
+}
+
 pub struct Config {
   pub print_only_count: bool,
   pub print_line_number: bool,
-  pub highlight_matches: bool,
+  pub highlight_matches: HighlightMatches,
   pub ignore_case: bool,
   pub is_quiet_mode: bool,
   pub invert_match: bool,
@@ -94,24 +100,29 @@ pub fn match_line(
       if matches.is_empty() {
           Err(input)
       } else {
-          if config.highlight_matches {
-            Ok(
-              highlight_with_colors(
-                &json_input,
-                matches,
-                vec![
-                  Color::Red,
-                  Color::Blue,
-                  Color::Yellow,
-                  Color::Green,
-                  Color::Magenta,
-                  Color::Cyan
-                ]
-              )
-            )
-          } else {
-            Ok(input)
-          }
+          Ok(
+            match config.highlight_matches {
+              HighlightMatches::Never => input,
+              HighlightMatches::Single => 
+                highlight(
+                  &json_input,
+                  matches
+                ),
+              HighlightMatches::Cycle =>
+                highlight_with_colors(
+                  &json_input,
+                  matches,
+                  vec![
+                    Color::Red,
+                    Color::Blue,
+                    Color::Yellow,
+                    Color::Green,
+                    Color::Magenta,
+                    Color::Cyan
+                  ]
+                )
+            }
+          )          
       }
     },
     _ => Err(input),

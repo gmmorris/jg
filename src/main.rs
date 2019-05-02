@@ -2,8 +2,10 @@
 extern crate lazy_static;
 extern crate regex;
 extern crate json_highlight_writer;
+extern crate isatty;
 
 use clap::{crate_version, App, Arg};
+use isatty::{stdout_isatty};
 
 mod input;
 mod selection;
@@ -33,8 +35,11 @@ fn main() {
                 .help("Select lines whose JSON input matches from the root of the object.")
         )
         .arg(
-            Arg::with_name("color")
-                .long("color")
+            Arg::with_name("colour")
+                .long("colour")
+                .visible_alias("color")
+                .takes_value(true)
+                .possible_values(&["never", "auto", "auto-cycle", "always", "always-cycle"])
                 .help("Mark up the JSON shapes matching the selector pattern when printing the output.")
         )
         .arg(
@@ -72,7 +77,7 @@ fn main() {
             Arg::with_name("quiet")
                 .short("q")
                 .long("quiet")
-                .long("silent")
+                .visible_alias("silent")
                 .help("Quiet mode: suppress normal output.")
         )
         .arg(
@@ -85,7 +90,14 @@ fn main() {
 
     let config = input::Config {
         print_only_count: matches.is_present("count"),
-        highlight_matches: matches.is_present("color"),
+        highlight_matches: match (matches.value_of("colour"), stdout_isatty()) {
+            (Some("always"), _) | (Some("auto"), true) =>
+                input::HighlightMatches::Single,
+            (Some("always-cycle"), _) | (Some("auto-cycle"), true) =>
+                input::HighlightMatches::Cycle,
+            _ =>
+                input::HighlightMatches::Never
+        },
         print_line_number: matches.is_present("line-number"),
         ignore_case: matches.is_present("ignore-case"),
         is_quiet_mode: matches.is_present("quiet"),
