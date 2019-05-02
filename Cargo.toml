@@ -1,6 +1,6 @@
 [package]
 name = "jg"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Gidi Meir Morris <gidi@gidi.io>"]
 edition = "2018"
 description = "Jeff Goldblum (jg) is a command-line JSON processor. jg searches for structural patterns in json input and prints each json object that matches the pattern."

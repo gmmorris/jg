@@ -18,7 +18,7 @@ matrix:
       env: TARGET=i686-unknown-linux-musl
     - os: linux
       rust: stable
-      env: TARGET=x86_64-unknown-linux-gnu
+      env: TARGET=x86_64-unknown-linux-gnu RPMISE=x86_64
     - os: linux
       rust: stable
       env: TARGET=x86_64-unknown-linux-musl RPMISE=x86_64
