@@ -5,6 +5,9 @@ authors = ["Gidi Meir Morris <gidi@gidi.io>"]
 edition = "2018"
 description = "Jeff Goldblum (jg) is a command-line JSON processor. jg searches for structural patterns in json input and prints each json object that matches the pattern."
 license = "MIT"
+keywords = ["json", "grep", "search", "pattern", "selector"]
+categories = ["command-line-utilities", "text-processing"]
+exclude = ["HomebrewFormula"]
 
 [dependencies]
 clap = "2.32.0"
