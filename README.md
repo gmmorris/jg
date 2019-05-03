@@ -223,6 +223,8 @@ yum install -y https://github.com/gmmorris/jg/releases/download/0.1.4/jg-0.1.4-x
 
 ## **EXAMPLES**
 
+![Using Colour to Highlight](../master/colour.gif?raw=true)
+
 To find all JSON input with an object with property `name` on it:
 
 ```bash
