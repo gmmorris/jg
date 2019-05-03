@@ -9,7 +9,7 @@ https://gidi.io/2019/03/01/structured-greping-of-structured-logging-using-grep-f
 
 # **SYNOPSIS**
 
-**jg** [**−cfimnqv**] [**−e** _pattern_] [**−f** _file_] [_pattern_]
+**jg** [**−^cfimnqv**] [**−e** _pattern_] [**−f** _file_]  [**−colour** _when_] [_pattern_]
 
 # **DESCRIPTION**
 
@@ -55,6 +55,11 @@ This is useful if you're trying to ensure a certain match is present in the file
 **−v**, **−−invert-match**
 
 Selected lines are those _not_ matching any of the specified selector patterns.
+
+**−^**, **−−match-root**
+
+Only match objects if the selector matches the root of the JSON shape.
+This means that, for example, if your selector is '.name' then the JSON shape must have a `name` property on JSON object itself, and a not an inner object.
 
 ## **SELECTOR PATTERNS**
 
