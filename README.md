@@ -22,6 +22,7 @@ The following options are available:
 Only a count of selected lines is written to standard output.
 
 **−−color=_when_**, **−−colour=_when_**
+
 Surround the matched JSON input with escape sequences to display them in colour on the terminal.
 _when_ is never, always, always-cycle, auto, or auto-cycle.
 The _always_ and _auto_ options use a single default colour to highlight matches, the difference being t hat _auto_ only highlights content when output is to the terminal.
