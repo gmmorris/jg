@@ -212,10 +212,10 @@ If you're on _OSX_ and use _Homebrew_ you can use the following script to instal
 brew install https://raw.githubusercontent.com/gmmorris/jg/master/packaging/homebrew.rb
 ```
 
-If you're on _linux_ we've created several binaries, including RPMs for supported distrobution, which are available on [the releases page](https://github.com/gmmorris/jg/releases).
+If you're on _linux_ we've created several binaries, including RPMs for supported distribution, which are available on [the releases page](https://github.com/gmmorris/jg/releases).
 
 If you wish to install using an RPM you can use the following command:
-_Note that the bellow command is *just an example*, you're better getting the latest URL from the releses page_
+_Note that the bellow command is *just an example*, you're better getting the latest URL from the releases page_
 
 ```
 yum install -y https://github.com/gmmorris/jg/releases/download/0.1.4/jg-0.1.4-x86_64-unknown-linux-gnu.rpm
