@@ -1,11 +1,11 @@
 #[macro_use]
 extern crate lazy_static;
-extern crate regex;
-extern crate json_highlight_writer;
 extern crate isatty;
+extern crate json_highlight_writer;
+extern crate regex;
 
 use clap::{crate_version, App, Arg};
-use isatty::{stdout_isatty};
+use isatty::stdout_isatty;
 
 mod input;
 mod selection;
@@ -91,12 +91,11 @@ fn main() {
     let config = input::Config {
         print_only_count: matches.is_present("count"),
         highlight_matches: match (matches.value_of("colour"), stdout_isatty()) {
-            (Some("always"), _) | (Some("auto"), true) =>
-                input::HighlightMatches::Single,
-            (Some("always-cycle"), _) | (Some("auto-cycle"), true) =>
-                input::HighlightMatches::Cycle,
-            _ =>
-                input::HighlightMatches::Never
+            (Some("always"), _) | (Some("auto"), true) => input::HighlightMatches::Single,
+            (Some("always-cycle"), _) | (Some("auto-cycle"), true) => {
+                input::HighlightMatches::Cycle
+            }
+            _ => input::HighlightMatches::Never,
         },
         print_line_number: matches.is_present("line-number"),
         ignore_case: matches.is_present("ignore-case"),

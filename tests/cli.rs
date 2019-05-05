@@ -96,7 +96,7 @@ mod cli {
             r#"{"name":"C-3PO","hair_color":"n/a","eye_color":"yellow"}
 {"name":"R2-D2","hair_color":"n/a","eye_color":"red"}
 {"name":"Admiral Ackbar","hair_color":"n/a","eye_color":"yellow"}
-"#
+"#,
         );
     }
 }

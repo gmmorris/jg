@@ -14,18 +14,13 @@ mod cli {
         let mut stdin_cmd = cmd.with_stdin();
         let mut assert_cmd = stdin_cmd.buffer("{\"name\":\"jeff goldblum\"}\n");
 
-        assert_cmd
-            .assert()
-            .success()
-            .stdout(
-                format!(
-                    r#"{}{}{}
+        assert_cmd.assert().success().stdout(format!(
+            r#"{}{}{}
 "#,
-                    r#"{"name":"#,
-                    r#""jeff goldblum""#.red(),
-                    r#"}"#
-                ) 
-            );
+            r#"{"name":"#,
+            r#""jeff goldblum""#.red(),
+            r#"}"#
+        ));
     }
 
     #[test]
@@ -37,22 +32,18 @@ mod cli {
         cmd.arg("-e").arg(r#".middle_name"#);
 
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer("{\"name\":\"jeff goldblum\",\"middle_name\":\"lynn\"}\n");
+        let mut assert_cmd =
+            stdin_cmd.buffer("{\"name\":\"jeff goldblum\",\"middle_name\":\"lynn\"}\n");
 
-        assert_cmd
-            .assert()
-            .success()
-            .stdout(
-                format!(
-                    r#"{}{}{}{}{}
+        assert_cmd.assert().success().stdout(format!(
+            r#"{}{}{}{}{}
 "#,
-                    r#"{"name":"#,
-                    r#""jeff goldblum""#.red(),
-                    r#","middle_name":"#,
-                    r#""lynn""#.blue(),
-                    r#"}"#
-                ) 
-            );
+            r#"{"name":"#,
+            r#""jeff goldblum""#.red(),
+            r#","middle_name":"#,
+            r#""lynn""#.blue(),
+            r#"}"#
+        ));
     }
 
 }

@@ -18,11 +18,10 @@ mod cli {
 {\"name\":\"blanco white\"}\n",
         );
 
-        assert_cmd
-            .assert()
-            .success()
-            .stdout("{\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
-{\"name\":\"blanco white\"}\n");
+        assert_cmd.assert().success().stdout(
+            "{\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
+{\"name\":\"blanco white\"}\n",
+        );
     }
 
     #[test]
@@ -37,10 +36,9 @@ mod cli {
 {\"name\":\"blanco white\"}\n",
         );
 
-        assert_cmd
-            .assert()
-            .success()
-            .stdout("{\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
-{\"name\":\"blanco white\"}\n");
+        assert_cmd.assert().success().stdout(
+            "{\"id\":\"404c18ce-04ac-457c-99f5-d548b27aa583\"}
+{\"name\":\"blanco white\"}\n",
+        );
     }
 }
