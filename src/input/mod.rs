@@ -15,7 +15,9 @@ pub enum HighlightMatches {
     Single,
 }
 
-pub struct Config {
+pub struct Config<'a> {
+    pub matchers: Vec<&'a str>,
+    pub input: Option<&'a str>,
     pub print_only_count: bool,
     pub print_line_number: bool,
     pub highlight_matches: HighlightMatches,
@@ -27,7 +29,6 @@ pub struct Config {
 }
 
 pub fn match_input<'a>(
-    input_file: Option<&str>,
     config: &Config,
     on_line: &Fn(String) -> Result<String, String>,
     on_result: &Fn(
@@ -35,7 +36,7 @@ pub fn match_input<'a>(
     ) -> (Option<usize>, Option<usize>),
 ) -> Result<Option<usize>, ()> {
     let stdin = io::stdin();
-    let input = match input_file {
+    let input = match config.input {
         Some(input) => buffer_input_file(input),
         None => Box::new(stdin.lock()) as Box<BufRead>,
     };
@@ -77,11 +78,11 @@ fn buffer_input_file(input: &str) -> Box<BufRead> {
     }
 }
 
-pub fn in_configured_case(value: &str, config: &Config) -> Option<String> {
+pub fn in_configured_case(value: &str, config: &Config) -> String {
     if config.ignore_case {
-        Some(value.to_lowercase())
+        value.to_lowercase()
     } else {
-        None
+        String::from(value)
     }
 }
 
@@ -90,10 +91,7 @@ pub fn match_line(
     config: &Config,
     input: String,
 ) -> Result<String, String> {
-    let parsed_json = in_configured_case(&input, config)
-        .map(|configured_string| json::parse(&configured_string))
-        .unwrap_or(json::parse(&input));
-    match parsed_json {
+    match json::parse(&in_configured_case(&input, config)) {
         Ok(json_input) => {
             let matches: Vec<&JsonValue> = matchers
                 .iter()

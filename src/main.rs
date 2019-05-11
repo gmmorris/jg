@@ -1,14 +1,8 @@
-#[macro_use]
-extern crate lazy_static;
-extern crate isatty;
-extern crate json_highlight_writer;
-extern crate regex;
+extern crate jg;
+use jg::input::HighlightMatches;
 
 use clap::{crate_version, App, Arg};
 use isatty::stdout_isatty;
-
-mod input;
-mod selection;
 
 fn main() {
     let matches = App::new("jg")
@@ -88,14 +82,28 @@ fn main() {
         )
         .get_matches();
 
-    let config = input::Config {
+
+    let matched_filters = matches
+        .values_of("patterns")
+        .map(|values| values.collect::<Vec<_>>())
+        .or_else(|| {
+            matches
+                .value_of("pattern")
+                .or(Some("."))
+                .map(|pattern| vec![pattern])
+        })
+        .expect("No matcher pattern has been specified");
+
+    let config = jg::input::Config {
+        matchers: matched_filters,
+        input: matches.value_of("file"),
         print_only_count: matches.is_present("count"),
         highlight_matches: match (matches.value_of("colour"), stdout_isatty()) {
-            (Some("always"), _) | (Some("auto"), true) => input::HighlightMatches::Single,
+            (Some("always"), _) | (Some("auto"), true) => HighlightMatches::Single,
             (Some("always-cycle"), _) | (Some("auto-cycle"), true) => {
-                input::HighlightMatches::Cycle
+                HighlightMatches::Cycle
             }
-            _ => input::HighlightMatches::Never,
+            _ => HighlightMatches::Never,
         },
         print_line_number: matches.is_present("line-number"),
         ignore_case: matches.is_present("ignore-case"),
@@ -107,79 +115,5 @@ fn main() {
         }),
     };
 
-    let matched_filters = matches
-        .values_of("patterns")
-        .map(|values| values.collect::<Vec<_>>())
-        .or_else(|| {
-            matches
-                .value_of("pattern")
-                .or(Some("."))
-                .map(|pattern| vec![pattern])
-        })
-        .map(|patterns| {
-            patterns
-                .iter()
-                .map(|pattern| {
-                    input::in_configured_case(pattern, &config).unwrap_or(String::from(*pattern))
-                })
-                .map(|pattern| selection::match_filters(&pattern))
-                .collect::<Vec<_>>()
-        })
-        .expect("No matcher pattern has been specified");
-
-    let has_matched = input::match_input(
-        matches.value_of("file"),
-        &config,
-        &|line| {
-            invert_result(
-                config.invert_match,
-                input::match_line(&matched_filters, &config, line),
-            )
-        },
-        &|(index, matched_count, matched_result)| {
-            if let Ok(matched_line) = matched_result {
-                if !(config.print_only_count || config.is_quiet_mode) {
-                    println!(
-                        "{}{}",
-                        index
-                            .map(|index| index.to_string() + ":")
-                            .unwrap_or(String::from("")),
-                        matched_line
-                    );
-                };
-            };
-            (index, matched_count)
-        },
-    );
-
-    match has_matched {
-        Ok(match_count) => {
-            if config.print_only_count {
-                println!("{}", match_count.expect("failed to count matched input"));
-            }
-            std::process::exit(0);
-        }
-        Err(_) => {
-            std::process::exit(1);
-        }
-    }
-}
-
-fn invert_result<A>(should_invert: bool, result: Result<A, A>) -> Result<A, A> {
-    match result {
-        Ok(ok_res) => {
-            if should_invert {
-                Err(ok_res)
-            } else {
-                Ok(ok_res)
-            }
-        }
-        Err(err_res) => {
-            if should_invert {
-                Ok(err_res)
-            } else {
-                Err(err_res)
-            }
-        }
-    }
+    jg::json_grep(config)
 }
