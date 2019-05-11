@@ -11,10 +11,10 @@ mod input;
 mod selection;
 
 fn main() {
-    let matches = App::new("jgrep")
+    let matches = App::new("jg")
         .version(crate_version!())
         .author("Gidi Meir Morris <gidi@gidi.io>")
-        .about("jgrep searches for PATTERNS in json input, jgrep prints each json object that matches a pattern.")
+        .about("Jeff Goldblum (jg) searches for PATTERNS in json input, jgrep prints each json object that matches a pattern.")
         .arg(
             Arg::with_name("pattern")
                 .takes_value(true)
