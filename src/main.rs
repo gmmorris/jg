@@ -82,7 +82,6 @@ fn main() {
         )
         .get_matches();
 
-
     let matched_filters = matches
         .values_of("patterns")
         .map(|values| values.collect::<Vec<_>>())
@@ -100,9 +99,7 @@ fn main() {
         print_only_count: matches.is_present("count"),
         highlight_matches: match (matches.value_of("colour"), stdout_isatty()) {
             (Some("always"), _) | (Some("auto"), true) => HighlightMatches::Single,
-            (Some("always-cycle"), _) | (Some("auto-cycle"), true) => {
-                HighlightMatches::Cycle
-            }
+            (Some("always-cycle"), _) | (Some("auto-cycle"), true) => HighlightMatches::Cycle,
             _ => HighlightMatches::Never,
         },
         print_line_number: matches.is_present("line-number"),
@@ -115,5 +112,15 @@ fn main() {
         }),
     };
 
-    jg::json_grep(config)
+    std::process::exit(match jg::json_grep(config) {
+        Ok(_) => 0,
+        Err(Some(err)) => {
+            eprintln!("{:}", err);
+            1
+        }
+        Err(None) => {
+            eprintln!("Unknown error");
+            1
+        }
+    });
 }

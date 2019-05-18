@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod cli {
     use assert_cmd::prelude::*;
-    use std::io::Write;
     use predicates::prelude::*;
+    use std::io::Write;
     use std::process::Command;
     use tempfile;
 
@@ -39,14 +39,16 @@ mod cli {
     }
 
     #[test]
-    fn should_panic_when_the_speciifc_file_is_missing() {
+    fn should_panic_when_the_specified_file_is_missing() {
         let mut cmd = Command::main_binary().unwrap();
 
         cmd.arg(".").arg("-f").arg("./missing_file.json");
 
-        cmd
-            .assert()
-            .failure()
-            .stderr(predicate::str::is_match(r#"The specified input file could not be found: "./missing_file.json""#).unwrap());
+        cmd.assert().failure().stderr(
+            predicate::str::is_match(
+                r#"The specified input file could not be found: "./missing_file.json""#,
+            )
+            .unwrap(),
+        );
     }
 }

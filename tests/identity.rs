@@ -45,6 +45,6 @@ mod cli {
         assert_cmd
             .assert()
             .failure()
-            .stderr(predicate::str::is_match(".*'Invalid filter: \"\\.\\.\"'.*").unwrap());
+            .stderr(predicate::str::is_match(r#"Invalid filter: "..""#).unwrap());
     }
 }

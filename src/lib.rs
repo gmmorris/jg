@@ -7,48 +7,49 @@ extern crate regex;
 pub mod input;
 mod selection;
 
-pub fn json_grep(config : input::Config) {
-  let matched_filters = config.matchers
-      .iter()
-      .map(|pattern| input::in_configured_case(pattern, &config))
-      .map(|pattern| selection::match_filters(&pattern))
-      .collect::<Vec<_>>();
+pub fn json_grep(config: input::Config) -> Result<(), Option<String>> {
+    let matched_filters: Result<Vec<_>, String> = config
+        .matchers
+        .iter()
+        .map(|pattern| input::in_configured_case(pattern, &config))
+        .map(|pattern| selection::match_filters(&pattern))
+        .collect();
 
-  let has_matched = input::match_input(
-      &config,
-      &|line| {
-          invert_result(
-              config.invert_match,
-              input::match_line(&matched_filters, &config, line),
-          )
-      },
-      &|(index, matched_count, matched_result)| {
-          if let Ok(matched_line) = matched_result {
-              if !(config.print_only_count || config.is_quiet_mode) {
-                  println!(
-                      "{}{}",
-                      index
-                          .map(|index| index.to_string() + ":")
-                          .unwrap_or(String::from("")),
-                      matched_line
-                  );
-              };
-          };
-          (index, matched_count)
-      },
-  );
+    let matched_filters = matched_filters?;
 
-  match has_matched {
-      Ok(match_count) => {
-          if config.print_only_count {
-              println!("{}", match_count.expect("failed to count matched input"));
-          }
-          std::process::exit(0);
-      }
-      Err(_) => {
-          std::process::exit(1);
-      }
-  }
+    let has_matched = input::match_input(
+        &config,
+        &|line| {
+            invert_result(
+                config.invert_match,
+                input::match_line(&matched_filters, &config, line),
+            )
+        },
+        &|(index, matched_count, matched_result)| {
+            if let Ok(matched_line) = matched_result {
+                if !(config.print_only_count || config.is_quiet_mode) {
+                    println!(
+                        "{}{}",
+                        index
+                            .map(|index| index.to_string() + ":")
+                            .unwrap_or(String::from("")),
+                        matched_line
+                    );
+                };
+            };
+            (index, matched_count)
+        },
+    );
+
+    match has_matched {
+        Ok(match_count) => {
+            if config.print_only_count {
+                println!("{}", match_count.expect("failed to count matched input"));
+            }
+            Ok(())
+        }
+        Err(err) => Err(err),
+    }
 }
 
 pub fn invert_result<A>(should_invert: bool, result: Result<A, A>) -> Result<A, A> {

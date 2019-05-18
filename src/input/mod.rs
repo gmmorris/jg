@@ -34,10 +34,10 @@ pub fn match_input<'a>(
     on_result: &Fn(
         (Option<usize>, Option<usize>, Result<String, String>),
     ) -> (Option<usize>, Option<usize>),
-) -> Result<Option<usize>, ()> {
+) -> Result<Option<usize>, Option<String>> {
     let stdin = io::stdin();
     let input = match config.input {
-        Some(input) => buffer_input_file(input),
+        Some(input) => buffer_input_file(input)?,
         None => Box::new(stdin.lock()) as Box<BufRead>,
     };
 
@@ -60,21 +60,22 @@ pub fn match_input<'a>(
         })
         .last()
         .map(|(_, matched_lines)| Ok(matched_lines))
-        .unwrap_or(Err(()))
+        .unwrap_or(Err(None))
 }
 
-fn buffer_input_file(input: &str) -> Box<BufRead> {
+fn buffer_input_file(input: &str) -> Result<Box<BufRead>, Option<String>> {
     match File::open(input) {
-        Ok(contents) => Box::new(BufReader::new(contents)),
-        Err(error) => match error.kind() {
-            ErrorKind::NotFound => {
-                panic!("The specified input file could not be found: {:?}", input)
-            }
-            other_error => panic!(
+        Ok(contents) => Ok(Box::new(BufReader::new(contents))),
+        Err(error) => Err(match error.kind() {
+            ErrorKind::NotFound => Some(format!(
+                "The specified input file could not be found: {:?}",
+                input
+            )),
+            other_error => Some(format!(
                 "There was a problem opening the file '{:?}': {:?}",
                 input, other_error
-            ),
-        },
+            )),
+        }),
     }
 }
 

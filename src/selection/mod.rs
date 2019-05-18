@@ -84,11 +84,9 @@ pub fn try_to_match_filters(
     }
 }
 
-pub fn match_filters(filter: &str) -> Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>> {
-    match try_to_match_filters(filter) {
-        Ok(matchers) => matchers,
-        Err(unmatched_filter) => {
-            panic!("Invalid filter: {:?}", unmatched_filter);
-        }
-    }
+pub fn match_filters(
+    filter: &str,
+) -> Result<Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>, String> {
+    try_to_match_filters(filter)
+        .map_err(|unmatched_filter| format!("Invalid filter: {:?}", unmatched_filter))
 }
