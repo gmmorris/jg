@@ -41,19 +41,11 @@ pub fn match_json_slice<'a>(
 }
 
 pub fn match_filter(filter: &str) -> Result<(Box<FnJsonValueLens>, Option<&str>), &str> {
-    match identity::greedily_matches(Some(filter)) {
-        Ok((matcher, remainder)) => Ok((matcher, remainder)),
-        Err(unmatched_filter) => match prop::greedily_matches(unmatched_filter) {
-            Ok((matcher, remainder)) => Ok((matcher, remainder)),
-            Err(unmatched_filter) => match array_member::greedily_matches(unmatched_filter) {
-                Ok((matcher, remainder)) => Ok((matcher, remainder)),
-                Err(unmatched_filter) => match sequence::greedily_matches(unmatched_filter) {
-                    Ok((matcher, remainder)) => Ok((matcher, remainder)),
-                    Err(_) => Err(filter),
-                },
-            },
-        },
-    }
+    identity::greedily_matches(Some(filter))
+        .or_else(|unmatched_filter| prop::greedily_matches(unmatched_filter))
+        .or_else(|unmatched_filter| array_member::greedily_matches(unmatched_filter))
+        .or_else(|unmatched_filter| sequence::greedily_matches(unmatched_filter))
+        .map_err(|_| filter)
 }
 
 pub fn try_to_match_filters(filter: &str) -> Result<Vec<Box<FnJsonValueLens>>, &str> {
