@@ -1,4 +1,7 @@
 use json::JsonValue;
+
+pub type FnJsonValueLens = Fn(Option<&JsonValue>) -> Option<&JsonValue>;
+
 mod array_member;
 mod identity;
 mod prop;
@@ -6,7 +9,7 @@ mod sequence;
 mod value_matchers;
 
 pub fn match_json_slice<'a>(
-    matchers: &Vec<Box<Fn(Option<&'a JsonValue>) -> Option<&'a JsonValue>>>,
+    matchers: &Vec<Box<FnJsonValueLens>>,
     json_input: &'a JsonValue,
     match_root_only: bool,
 ) -> Result<&'a JsonValue, ()> {
@@ -37,15 +40,7 @@ pub fn match_json_slice<'a>(
     }
 }
 
-pub fn match_filter(
-    filter: &str,
-) -> Result<
-    (
-        Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
-        Option<&str>,
-    ),
-    &str,
-> {
+pub fn match_filter(filter: &str) -> Result<(Box<FnJsonValueLens>, Option<&str>), &str> {
     match identity::greedily_matches(Some(filter)) {
         Ok((matcher, remainder)) => Ok((matcher, remainder)),
         Err(unmatched_filter) => match prop::greedily_matches(unmatched_filter) {
@@ -61,10 +56,8 @@ pub fn match_filter(
     }
 }
 
-pub fn try_to_match_filters(
-    filter: &str,
-) -> Result<Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>, &str> {
-    let mut matchers: Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>> = vec![];
+pub fn try_to_match_filters(filter: &str) -> Result<Vec<Box<FnJsonValueLens>>, &str> {
+    let mut matchers: Vec<Box<FnJsonValueLens>> = vec![];
     let mut unmatched_filter: Result<Option<&str>, &str> = Ok(Some(filter));
     while let Ok(Some(filter)) = unmatched_filter {
         match match_filter(filter) {
@@ -84,9 +77,7 @@ pub fn try_to_match_filters(
     }
 }
 
-pub fn match_filters(
-    filter: &str,
-) -> Result<Vec<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>>, String> {
+pub fn match_filters(filter: &str) -> Result<Vec<Box<FnJsonValueLens>>, String> {
     try_to_match_filters(filter)
         .map_err(|unmatched_filter| format!("Invalid filter: {:?}", unmatched_filter))
 }

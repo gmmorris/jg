@@ -1,11 +1,9 @@
 use json::JsonValue;
 use regex::Regex;
 
-use super::{match_json_slice, try_to_match_filters};
+use super::{match_json_slice, try_to_match_filters, FnJsonValueLens};
 
-pub fn sequence(
-    inner_matchers: &str,
-) -> Result<Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>, &str> {
+pub fn sequence(inner_matchers: &str) -> Result<Box<FnJsonValueLens>, &str> {
     match try_to_match_filters(inner_matchers) {
         Ok(matchers) => Ok(Box::new(move |input: Option<&JsonValue>| match input {
             Some(json) => match json {
@@ -33,13 +31,7 @@ fn match_sequence(pattern: &str) -> Option<&str> {
 
 pub fn greedily_matches(
     maybe_pattern: Option<&str>,
-) -> Result<
-    (
-        Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
-        Option<&str>,
-    ),
-    Option<&str>,
-> {
+) -> Result<(Box<FnJsonValueLens>, Option<&str>), Option<&str>> {
     match maybe_pattern {
         Some(pattern) => match match_sequence(pattern) {
             Some(inner_matchers) => match sequence(inner_matchers) {
