@@ -29,15 +29,12 @@ fn match_sequence(pattern: &str) -> Option<&str> {
 pub fn greedily_matches(
     maybe_pattern: Option<&str>,
 ) -> Result<(Box<FnJsonValueLens>, Option<&str>), Option<&str>> {
-    match maybe_pattern {
-        Some(pattern) => match match_sequence(pattern) {
-            Some(inner_matchers) => match try_to_match_filters(inner_matchers) {
-                Ok(matchers) => Ok((sequence(matchers), None)),
-                Err(_) => Err(maybe_pattern),
-            },
-            None => Err(maybe_pattern),
-        },
-        None => Err(maybe_pattern),
+    match maybe_pattern
+        .and_then(match_sequence)
+        .map(try_to_match_filters)
+    {
+        Some(Ok(matchers)) => Ok((sequence(matchers), None)),
+        _ => Err(maybe_pattern),
     }
 }
 
