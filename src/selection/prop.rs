@@ -3,89 +3,106 @@ use regex::Regex;
 
 use super::value_matchers::*;
 
+fn prop_value_matches_exact<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'b JsonValueMatcher) -> Option<&'a JsonValue> {
+    match (prop, prop_value_matcher) {
+        (&JsonValue::String(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
+            Some(prop).filter(|_| string_prop.eq(prop_value))
+        }
+        (&JsonValue::Short(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
+            Some(prop).filter(|_| string_prop.eq(prop_value))
+        }
+        (&JsonValue::Number(ref number_prop), &JsonValueMatcher::Number(ref prop_value)) => {
+            Some(prop).filter(|_| number_prop.eq(prop_value))
+        }
+        (&JsonValue::Boolean(ref bool_prop), &JsonValueMatcher::Boolean(ref prop_value)) => {
+            Some(prop).filter(|_| bool_prop.eq(prop_value))
+        }
+        (&JsonValue::Null, &JsonValueMatcher::Null) => Some(prop),
+        (_, _) => None,
+    }
+}
+
+fn prop_value_contains_exact<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'b JsonValueMatcher) -> Option<&'a JsonValue> {
+    match (prop, prop_value_matcher) {
+        (&JsonValue::String(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
+            Some(prop).filter(|_| {
+                string_prop
+                    .split_whitespace()
+                    .find(|string_prop| string_prop.eq(prop_value))
+                    .is_some()
+            })
+        }
+        (&JsonValue::Short(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
+            Some(prop).filter(|_| {
+                string_prop
+                    .split_whitespace()
+                    .find(|string_prop| string_prop.eq(prop_value))
+                    .is_some()
+            })
+        }
+        (_, _) => None,
+    }
+}
+
+fn prop_value_is_prefixed_by<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'b JsonValueMatcher) -> Option<&'a JsonValue> {
+    match (prop, prop_value_matcher) {
+        (&JsonValue::String(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
+            Some(prop).filter(|_| string_prop.starts_with(prop_value))
+        }
+        (&JsonValue::Short(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
+            Some(prop).filter(|_| string_prop.starts_with(prop_value))
+        }
+        (_, _) => None,
+    }
+}
+
+fn prop_value_is_suffixed_by<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'b JsonValueMatcher) -> Option<&'a JsonValue> {
+    match (prop, prop_value_matcher) {
+        (&JsonValue::String(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
+            Some(prop).filter(|_| string_prop.ends_with(prop_value))
+        }
+        (&JsonValue::Short(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
+            Some(prop).filter(|_| string_prop.ends_with(prop_value))
+        }
+        (_, _) => None,
+    }
+}
+
+fn prop_value_contains<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'b JsonValueMatcher) -> Option<&'a JsonValue> {
+    match (prop, prop_value_matcher) {
+        (&JsonValue::String(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
+            Some(prop).filter(|_| string_prop.contains(prop_value))
+        }
+        (&JsonValue::Short(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
+            Some(prop).filter(|_| string_prop.contains(prop_value))
+        }
+        (_, _) => None,
+    }
+}
+
 pub fn prop(
     prop_name: String,
     prop_value: Option<JsonValueMemberMatcher>,
 ) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
     Box::new(move |input: Option<&JsonValue>| match input {
-        Some(json) => match json {
-            JsonValue::Object(ref object) => match (object.get(&prop_name), &prop_value) {
-                (Some(prop), Some(JsonValueMemberMatcher::Exact(prop_value_matcher))) => {
-                    match (prop, prop_value_matcher) {
-                        (JsonValue::String(string_prop), JsonValueMatcher::String(prop_value)) => {
-                            Some(prop).filter(|_| string_prop.eq(prop_value))
-                        }
-                        (JsonValue::Short(string_prop), JsonValueMatcher::String(prop_value)) => {
-                            Some(prop).filter(|_| string_prop.eq(prop_value))
-                        }
-                        (JsonValue::Number(number_prop), JsonValueMatcher::Number(prop_value)) => {
-                            Some(prop).filter(|_| number_prop.eq(prop_value))
-                        }
-                        (JsonValue::Boolean(bool_prop), JsonValueMatcher::Boolean(prop_value)) => {
-                            Some(prop).filter(|_| bool_prop.eq(prop_value))
-                        }
-                        (JsonValue::Null, JsonValueMatcher::Null) => Some(prop),
-                        (_, _) => None,
-                    }
-                }
-                (Some(prop), Some(JsonValueMemberMatcher::ContainsExact(prop_value_matcher))) => {
-                    match (prop, prop_value_matcher) {
-                        (JsonValue::String(string_prop), JsonValueMatcher::String(prop_value)) => {
-                            Some(prop).filter(|_| {
-                                string_prop
-                                    .split_whitespace()
-                                    .find(|string_prop| string_prop.eq(prop_value))
-                                    .is_some()
-                            })
-                        }
-                        (JsonValue::Short(string_prop), JsonValueMatcher::String(prop_value)) => {
-                            Some(prop).filter(|_| {
-                                string_prop
-                                    .split_whitespace()
-                                    .find(|string_prop| string_prop.eq(prop_value))
-                                    .is_some()
-                            })
-                        }
-                        (_, _) => None,
-                    }
-                }
-                (Some(prop), Some(JsonValueMemberMatcher::Prefixed(prop_value_matcher))) => {
-                    match (prop, prop_value_matcher) {
-                        (JsonValue::String(string_prop), JsonValueMatcher::String(prop_value)) => {
-                            Some(prop).filter(|_| string_prop.starts_with(prop_value))
-                        }
-                        (JsonValue::Short(string_prop), JsonValueMatcher::String(prop_value)) => {
-                            Some(prop).filter(|_| string_prop.starts_with(prop_value))
-                        }
-                        (_, _) => None,
-                    }
-                }
-                (Some(prop), Some(JsonValueMemberMatcher::Suffixed(prop_value_matcher))) => {
-                    match (prop, prop_value_matcher) {
-                        (JsonValue::String(string_prop), JsonValueMatcher::String(prop_value)) => {
-                            Some(prop).filter(|_| string_prop.ends_with(prop_value))
-                        }
-                        (JsonValue::Short(string_prop), JsonValueMatcher::String(prop_value)) => {
-                            Some(prop).filter(|_| string_prop.ends_with(prop_value))
-                        }
-                        (_, _) => None,
-                    }
-                }
-                (Some(prop), Some(JsonValueMemberMatcher::Contains(prop_value_matcher))) => {
-                    match (prop, prop_value_matcher) {
-                        (JsonValue::String(string_prop), JsonValueMatcher::String(prop_value)) => {
-                            Some(prop).filter(|_| string_prop.contains(prop_value))
-                        }
-                        (JsonValue::Short(string_prop), JsonValueMatcher::String(prop_value)) => {
-                            Some(prop).filter(|_| string_prop.contains(prop_value))
-                        }
-                        (_, _) => None,
-                    }
-                }
-                (Some(prop), None) => Some(prop),
-                (None, _) => None,
-            },
-            _ => None,
+        Some(JsonValue::Object(ref object)) => match (object.get(&prop_name), &prop_value) {
+            (Some(ref prop), Some(JsonValueMemberMatcher::Exact(ref prop_value_matcher))) => {
+                prop_value_matches_exact(prop, prop_value_matcher)
+            }
+            (Some(ref prop), Some(JsonValueMemberMatcher::ContainsExact(ref prop_value_matcher))) => {
+                prop_value_contains_exact(prop, prop_value_matcher)
+            }
+            (Some(prop), Some(JsonValueMemberMatcher::Prefixed(prop_value_matcher))) => {
+                prop_value_is_prefixed_by(prop, prop_value_matcher)
+            }
+            (Some(prop), Some(JsonValueMemberMatcher::Suffixed(prop_value_matcher))) => {
+                prop_value_is_suffixed_by(prop, prop_value_matcher)
+            }
+            (Some(prop), Some(JsonValueMemberMatcher::Contains(prop_value_matcher))) => {
+                prop_value_contains(prop, prop_value_matcher)
+            }
+            (Some(prop), None) => Some(prop),
+            (None, _) => None,
         },
         _ => None,
     })
