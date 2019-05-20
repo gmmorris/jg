@@ -46,67 +46,61 @@ pub fn array_member(
     member_matcher: JsonValueMemberMatcher,
 ) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
     Box::new(move |input: Option<&JsonValue>| match input {
-        Some(json) => match json {
-            JsonValue::Array(ref array) => match &member_matcher {
-                JsonValueMemberMatcher::Exact(json_value_matcher) => {
-                    if array.len() == 1 {
-                        member_in_array(array, json_value_matcher)
-                    } else {
-                        None
-                    }
-                }
-                JsonValueMemberMatcher::ContainsExact(json_value_matcher) => {
+        Some(JsonValue::Array(ref array)) => match &member_matcher {
+            JsonValueMemberMatcher::Exact(json_value_matcher) => {
+                if array.len() == 1 {
                     member_in_array(array, json_value_matcher)
+                } else {
+                    None
                 }
-                JsonValueMemberMatcher::Prefixed(json_value_matcher) => {
-                    array
-                        .iter()
-                        .find(|member| match (member, json_value_matcher) {
-                            (
-                                JsonValue::Short(string_prop),
-                                JsonValueMatcher::String(string_value),
-                            ) => string_prop.starts_with(string_value),
-                            (
-                                JsonValue::String(string_prop),
-                                JsonValueMatcher::String(string_value),
-                            ) => string_prop.starts_with(string_value),
-                            _ => false,
-                        })
-                }
-                JsonValueMemberMatcher::Suffixed(json_value_matcher) => {
-                    array
-                        .iter()
-                        .find(|member| match (member, json_value_matcher) {
-                            (
-                                JsonValue::Short(string_prop),
-                                JsonValueMatcher::String(string_value),
-                            ) => string_prop.ends_with(string_value),
-                            (
-                                JsonValue::String(string_prop),
-                                JsonValueMatcher::String(string_value),
-                            ) => string_prop.ends_with(string_value),
-                            _ => false,
-                        })
-                }
-                JsonValueMemberMatcher::Contains(json_value_matcher) => {
-                    array
-                        .iter()
-                        .find(|member| match (member, json_value_matcher) {
-                            (
-                                JsonValue::Short(string_prop),
-                                JsonValueMatcher::String(string_value),
-                            ) => string_prop.contains(string_value),
-                            (
-                                JsonValue::String(string_prop),
-                                JsonValueMatcher::String(string_value),
-                            ) => string_prop.contains(string_value),
-                            _ => false,
-                        })
-                }
-            },
-            _ => None,
+            }
+            JsonValueMemberMatcher::ContainsExact(json_value_matcher) => {
+                member_in_array(array, json_value_matcher)
+            }
+            JsonValueMemberMatcher::Prefixed(json_value_matcher) => {
+                array
+                    .iter()
+                    .find(|member| match (member, json_value_matcher) {
+                        (JsonValue::Short(string_prop), JsonValueMatcher::String(string_value)) => {
+                            string_prop.starts_with(string_value)
+                        }
+                        (
+                            JsonValue::String(string_prop),
+                            JsonValueMatcher::String(string_value),
+                        ) => string_prop.starts_with(string_value),
+                        _ => false,
+                    })
+            }
+            JsonValueMemberMatcher::Suffixed(json_value_matcher) => {
+                array
+                    .iter()
+                    .find(|member| match (member, json_value_matcher) {
+                        (JsonValue::Short(string_prop), JsonValueMatcher::String(string_value)) => {
+                            string_prop.ends_with(string_value)
+                        }
+                        (
+                            JsonValue::String(string_prop),
+                            JsonValueMatcher::String(string_value),
+                        ) => string_prop.ends_with(string_value),
+                        _ => false,
+                    })
+            }
+            JsonValueMemberMatcher::Contains(json_value_matcher) => {
+                array
+                    .iter()
+                    .find(|member| match (member, json_value_matcher) {
+                        (JsonValue::Short(string_prop), JsonValueMatcher::String(string_value)) => {
+                            string_prop.contains(string_value)
+                        }
+                        (
+                            JsonValue::String(string_prop),
+                            JsonValueMatcher::String(string_value),
+                        ) => string_prop.contains(string_value),
+                        _ => false,
+                    })
+            }
         },
-        None => None,
+        _ => None,
     })
 }
 

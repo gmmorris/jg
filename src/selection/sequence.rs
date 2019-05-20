@@ -3,19 +3,16 @@ use regex::Regex;
 
 use super::{match_json_slice, try_to_match_filters, FnJsonValueLens};
 
-pub fn sequence(inner_matchers: &str) -> Result<Box<FnJsonValueLens>, &str> {
-    match try_to_match_filters(inner_matchers) {
-        Ok(matchers) => Ok(Box::new(move |input: Option<&JsonValue>| match input {
-            Some(json) => match json {
-                JsonValue::Array(ref array) => array
-                    .iter()
-                    .find(|member| match_json_slice(&matchers, member, true).is_ok()),
-                _ => None,
-            },
-            None => None,
-        })),
-        Err(_) => Err(inner_matchers),
-    }
+pub fn sequence(matchers: Vec<Box<FnJsonValueLens>>) -> Box<FnJsonValueLens> {
+    Box::new(move |input: Option<&JsonValue>| match input {
+        Some(json) => match json {
+            JsonValue::Array(ref array) => array
+                .iter()
+                .find(|member| match_json_slice(&matchers, member, true).is_ok()),
+            _ => None,
+        },
+        None => None,
+    })
 }
 
 fn match_sequence(pattern: &str) -> Option<&str> {
@@ -34,8 +31,8 @@ pub fn greedily_matches(
 ) -> Result<(Box<FnJsonValueLens>, Option<&str>), Option<&str>> {
     match maybe_pattern {
         Some(pattern) => match match_sequence(pattern) {
-            Some(inner_matchers) => match sequence(inner_matchers) {
-                Ok(inner_matcher) => Ok((inner_matcher, None)),
+            Some(inner_matchers) => match try_to_match_filters(inner_matchers) {
+                Ok(matchers) => Ok((sequence(matchers), None)),
                 Err(_) => Err(maybe_pattern),
             },
             None => Err(maybe_pattern),
@@ -79,6 +76,9 @@ mod tests {
           "age"     => 30,
           "identities" => array![]
         };
-        assert_eq!(sequence(".").unwrap()(Some(&data["identities"])), None);
+        assert_eq!(
+            sequence(try_to_match_filters(".").unwrap())(Some(&data["identities"])),
+            None
+        );
     }
 }

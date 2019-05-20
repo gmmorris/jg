@@ -3,7 +3,10 @@ use regex::Regex;
 
 use super::value_matchers::*;
 
-fn prop_value_matches_exact<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'b JsonValueMatcher) -> Option<&'a JsonValue> {
+fn prop_value_matches_exact<'a, 'b>(
+    prop: &'a JsonValue,
+    prop_value_matcher: &'b JsonValueMatcher,
+) -> Option<&'a JsonValue> {
     match (prop, prop_value_matcher) {
         (&JsonValue::String(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
             Some(prop).filter(|_| string_prop.eq(prop_value))
@@ -22,7 +25,10 @@ fn prop_value_matches_exact<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'b
     }
 }
 
-fn prop_value_contains_exact<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'b JsonValueMatcher) -> Option<&'a JsonValue> {
+fn prop_value_contains_exact<'a, 'b>(
+    prop: &'a JsonValue,
+    prop_value_matcher: &'b JsonValueMatcher,
+) -> Option<&'a JsonValue> {
     match (prop, prop_value_matcher) {
         (&JsonValue::String(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
             Some(prop).filter(|_| {
@@ -44,7 +50,10 @@ fn prop_value_contains_exact<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'
     }
 }
 
-fn prop_value_is_prefixed_by<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'b JsonValueMatcher) -> Option<&'a JsonValue> {
+fn prop_value_is_prefixed_by<'a, 'b>(
+    prop: &'a JsonValue,
+    prop_value_matcher: &'b JsonValueMatcher,
+) -> Option<&'a JsonValue> {
     match (prop, prop_value_matcher) {
         (&JsonValue::String(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
             Some(prop).filter(|_| string_prop.starts_with(prop_value))
@@ -56,7 +65,10 @@ fn prop_value_is_prefixed_by<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'
     }
 }
 
-fn prop_value_is_suffixed_by<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'b JsonValueMatcher) -> Option<&'a JsonValue> {
+fn prop_value_is_suffixed_by<'a, 'b>(
+    prop: &'a JsonValue,
+    prop_value_matcher: &'b JsonValueMatcher,
+) -> Option<&'a JsonValue> {
     match (prop, prop_value_matcher) {
         (&JsonValue::String(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
             Some(prop).filter(|_| string_prop.ends_with(prop_value))
@@ -68,7 +80,10 @@ fn prop_value_is_suffixed_by<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'
     }
 }
 
-fn prop_value_contains<'a, 'b>(prop: &'a JsonValue, prop_value_matcher: &'b JsonValueMatcher) -> Option<&'a JsonValue> {
+fn prop_value_contains<'a, 'b>(
+    prop: &'a JsonValue,
+    prop_value_matcher: &'b JsonValueMatcher,
+) -> Option<&'a JsonValue> {
     match (prop, prop_value_matcher) {
         (&JsonValue::String(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
             Some(prop).filter(|_| string_prop.contains(prop_value))
@@ -89,9 +104,10 @@ pub fn prop(
             (Some(ref prop), Some(JsonValueMemberMatcher::Exact(ref prop_value_matcher))) => {
                 prop_value_matches_exact(prop, prop_value_matcher)
             }
-            (Some(ref prop), Some(JsonValueMemberMatcher::ContainsExact(ref prop_value_matcher))) => {
-                prop_value_contains_exact(prop, prop_value_matcher)
-            }
+            (
+                Some(ref prop),
+                Some(JsonValueMemberMatcher::ContainsExact(ref prop_value_matcher)),
+            ) => prop_value_contains_exact(prop, prop_value_matcher),
             (Some(prop), Some(JsonValueMemberMatcher::Prefixed(prop_value_matcher))) => {
                 prop_value_is_prefixed_by(prop, prop_value_matcher)
             }
