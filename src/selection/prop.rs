@@ -101,13 +101,12 @@ pub fn prop(
 ) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
     Box::new(move |input: Option<&JsonValue>| match input {
         Some(JsonValue::Object(ref object)) => match (object.get(&prop_name), &prop_value) {
-            (Some(ref prop), Some(JsonValueMemberMatcher::Exact(ref prop_value_matcher))) => {
+            (Some(prop), Some(JsonValueMemberMatcher::Exact(prop_value_matcher))) => {
                 prop_value_matches_exact(prop, prop_value_matcher)
             }
-            (
-                Some(ref prop),
-                Some(JsonValueMemberMatcher::ContainsExact(ref prop_value_matcher)),
-            ) => prop_value_contains_exact(prop, prop_value_matcher),
+            (Some(prop), Some(JsonValueMemberMatcher::ContainsExact(prop_value_matcher))) => {
+                prop_value_contains_exact(prop, prop_value_matcher)
+            }
             (Some(prop), Some(JsonValueMemberMatcher::Prefixed(prop_value_matcher))) => {
                 prop_value_is_prefixed_by(prop, prop_value_matcher)
             }
