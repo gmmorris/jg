@@ -2,6 +2,12 @@
 
 **Jeff Goldblum** / **jg** is a command-line JSON processor which searches for structural patterns in json input and prints each json object that matches the pattern.
 
+## **SUMMARY**
+1. **jg** is designed as a drop-in repalcement to **grep** specifically for _JSON structured log files_
+1. **jg** reads _each line_ in the file as if it is a valid JSON object
+1. **jg** will use the _selector pattern_ that you specify to match against each line in the file
+1. if the line matches the selector **jg** will print the line
+
 Read all about the reasoning behind the **jg**'s creation here:
 https://gidi.io/2019/03/01/structured-greping-of-structured-logging-using-grep-for-json.html
 
@@ -215,7 +221,7 @@ That said, under the _releases_ tab you will find both an _OSX_ and _Linux_ rele
 If you're on _OSX_ and use _Homebrew_ you can use the following script to install the latest OSX release:
 
 ```
-brew install https://raw.githubusercontent.com/gmmorris/jg/master/packaging/homebrew.rb
+brew install https://raw.githubusercontent.com/gmmorris/jg/master/packaging/jg.rb
 ```
 
 If you're on _linux_ we've created several binaries, including RPMs for supported distribution, which are available on [the releases page](https://github.com/gmmorris/jg/releases).
