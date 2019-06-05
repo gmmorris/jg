@@ -80,20 +80,31 @@ $ curl 'http://api.open-notify.org/astros.json'
 ...you might get a response resembling this:
 
 ```json
+{"people":[{"name":"Oleg Kononenko","craft":"ISS"},{"name":"David Saint-Jacques","craft":"ISS"},{"name":"Anne McClain","craft":"ISS"}],"number":3}
+```
+
+That's a little hard for a human to read, so just for legibility you can see a beautified version bellow.
+
+```json
 {
-	"people": [{
-		"name": "Oleg Kononenko",
-		"craft": "ISS"
-	}, {
-		"name": "David Saint-Jacques",
-		"craft": "ISS"
-	}, {
-		"name": "Anne McClain",
-		"craft": "ISS"
-	}],
+	"people": [
+		{
+			"name": "Oleg Kononenko",
+			"craft": "ISS"
+		}, {
+			"name": "David Saint-Jacques",
+			"craft": "ISS"
+		}, {
+			"name": "Anne McClain",
+			"craft": "ISS"
+		}
+	],
 	"number": 3
 }
 ```
+
+> It's **important to note** that **jg** evaluates each row in the input as JSON so you would have to stick to the original (non beautified) version when using **jg**.
+
 
 If you wish to use the _cli_ to verify that there are people in space, you can use **jg** to ensure there is a _people_ property on the object.
 For that we can use the _property matcher_ which matches any JSON object who has the specified property on it.
