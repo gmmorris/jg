@@ -4,9 +4,9 @@
 
 ## **SUMMARY**
 1. **jg** is designed as a drop-in repalcement to **grep** specifically for _JSON structured log files_
-1. **jg** reads _each line_ in the file as if it is a valid JSON object
+1. **jg** reads _each line_ in the file and attempt to read it as valid JSON
 1. **jg** will use the _selector pattern_ that you specify to match against each line in the file
-1. if the line matches the selector **jg** will print the line
+1. if the line of JSON does in fact match the selector pattern then **jg** will print the line
 
 Read all about the reasoning behind the **jg**'s creation here:
 https://gidi.io/2019/03/01/structured-greping-of-structured-logging-using-grep-for-json.html
