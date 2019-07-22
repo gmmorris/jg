@@ -64,6 +64,7 @@ mod tests {
         };
 
         match res {
+
             Ok((matcher, _)) => assert_eq!(
                 matcher.select(Some(&data["identities"])),
                 Some(&data["identities"][0])
@@ -79,10 +80,12 @@ mod tests {
           "age"     => 30,
           "identities" => array![]
         };
-        let sequence = Sequence {
-            matchers: try_to_match_filters(".").unwrap(),
-        };
 
-        assert_eq!(sequence.select(Some(&data["identities"])), None);
+        let sequence = Sequence { matchers: try_to_match_filters(".").unwrap() };
+
+        assert_eq!(
+            sequence.select(Some(&data["identities"])),
+            None
+        );
     }
 }
