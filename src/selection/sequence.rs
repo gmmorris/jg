@@ -1,10 +1,10 @@
 use json::JsonValue;
 use regex::Regex;
 
-use super::{match_json_slice, try_to_match_filters, FnJsonValueLens};
+use super::{match_json_slice, try_to_match_filters, SelectionJsonValueLens};
 
-pub fn sequence(matchers: Vec<Box<FnJsonValueLens>>) -> Box<FnJsonValueLens> {
-    Box::new(move |input: Option<&JsonValue>| match input {
+pub fn sequence(matchers: Vec<SelectionJsonValueLens>) -> SelectionJsonValueLens {
+    SelectionJsonValueLens::Fn(Box::new(move |input: Option<&JsonValue>| match input {
         Some(json) => match json {
             JsonValue::Array(ref array) => array
                 .iter()
@@ -12,7 +12,7 @@ pub fn sequence(matchers: Vec<Box<FnJsonValueLens>>) -> Box<FnJsonValueLens> {
             _ => None,
         },
         None => None,
-    })
+    }))
 }
 
 fn match_sequence(pattern: &str) -> Option<&str> {
@@ -28,7 +28,7 @@ fn match_sequence(pattern: &str) -> Option<&str> {
 
 pub fn greedily_matches(
     maybe_pattern: Option<&str>,
-) -> Result<(Box<FnJsonValueLens>, Option<&str>), Option<&str>> {
+) -> Result<(SelectionJsonValueLens, Option<&str>), Option<&str>> {
     match maybe_pattern
         .and_then(match_sequence)
         .map(try_to_match_filters)
@@ -58,7 +58,7 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => assert_eq!(
+            Ok((SelectionJsonValueLens::Fn(matcher), _)) => assert_eq!(
                 matcher(Some(&data["identities"])),
                 Some(&data["identities"][0])
             ),
@@ -74,7 +74,9 @@ mod tests {
           "identities" => array![]
         };
         assert_eq!(
-            sequence(try_to_match_filters(".").unwrap())(Some(&data["identities"])),
+            match sequence(try_to_match_filters(".").unwrap()) {
+                SelectionJsonValueLens::Fn(op) => op(Some(&data["identities"])),
+            },
             None
         );
     }

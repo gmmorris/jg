@@ -2,6 +2,7 @@ use json::JsonValue;
 use regex::Regex;
 
 use super::value_matchers::*;
+use super::{FnJsonValueLens, SelectionJsonValueLens};
 
 fn prop_value_matches_exact<'a, 'b>(
     prop: &'a JsonValue,
@@ -98,8 +99,8 @@ fn prop_value_contains<'a, 'b>(
 pub fn prop(
     prop_name: String,
     prop_value: Option<JsonValueMemberMatcher>,
-) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
-    Box::new(move |input: Option<&JsonValue>| match input {
+) -> SelectionJsonValueLens {
+    SelectionJsonValueLens::Fn(Box::new(move |input: Option<&JsonValue>| match input {
         Some(JsonValue::Object(ref object)) => match (object.get(&prop_name), &prop_value) {
             (Some(prop), Some(JsonValueMemberMatcher::Exact(prop_value_matcher))) => {
                 prop_value_matches_exact(prop, prop_value_matcher)
@@ -120,7 +121,7 @@ pub fn prop(
             (None, _) => None,
         },
         _ => None,
-    })
+    }))
 }
 
 fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMemberMatcher>, Option<&str>)> {
@@ -153,13 +154,7 @@ fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMemberMatcher>, Op
 
 pub fn greedily_matches(
     maybe_pattern: Option<&str>,
-) -> Result<
-    (
-        Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
-        Option<&str>,
-    ),
-    Option<&str>,
-> {
+) -> Result<(SelectionJsonValueLens, Option<&str>), Option<&str>> {
     match maybe_pattern {
         Some(pattern) => match match_prop(pattern) {
             Some((prop_name, prop_value, remainder)) => {
@@ -176,6 +171,12 @@ mod tests {
     use super::*;
     use json::object;
 
+    fn unwrap(op: SelectionJsonValueLens) -> Box<FnJsonValueLens> {
+        match op {
+            SelectionJsonValueLens::Fn(op) => op,
+        }
+    }
+
     #[test]
     fn should_match_prop() {
         let res = greedily_matches(Some(".name"));
@@ -187,7 +188,9 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["name"])),
+            Ok((SelectionJsonValueLens::Fn(matcher), _)) => {
+                assert_eq!(matcher(Some(data)), Some(&data["name"]))
+            }
             _ => panic!("Invalid result"),
         }
     }
@@ -215,7 +218,7 @@ mod tests {
 
     #[test]
     fn should_return_none_when_json_isnt_present() {
-        assert_eq!(prop(String::from(".id"), None)(None), None);
+        assert_eq!(unwrap(prop(String::from(".id"), None))(None), None);
     }
 
     #[test]
@@ -226,7 +229,7 @@ mod tests {
         };
 
         assert_eq!(
-            prop(String::from("name"), None)(Some(data)),
+            unwrap(prop(String::from("name"), None))(Some(data)),
             Some(&data["name"])
         );
     }
@@ -242,7 +245,9 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["age"])),
+            Ok((SelectionJsonValueLens::Fn(matcher), _)) => {
+                assert_eq!(matcher(Some(data)), Some(&data["age"]))
+            }
             _ => panic!("Invalid result"),
         }
     }
@@ -259,7 +264,9 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["country"])),
+            Ok((SelectionJsonValueLens::Fn(matcher), _)) => {
+                assert_eq!(matcher(Some(data)), Some(&data["country"]))
+            }
             _ => panic!("Invalid result"),
         }
     }
@@ -276,7 +283,9 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["country"])),
+            Ok((SelectionJsonValueLens::Fn(matcher), _)) => {
+                assert_eq!(matcher(Some(data)), Some(&data["country"]))
+            }
             _ => panic!("Invalid result"),
         }
     }
@@ -293,7 +302,9 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["country"])),
+            Ok((SelectionJsonValueLens::Fn(matcher), _)) => {
+                assert_eq!(matcher(Some(data)), Some(&data["country"]))
+            }
             _ => panic!("Invalid result"),
         }
     }
@@ -310,7 +321,9 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["country"])),
+            Ok((SelectionJsonValueLens::Fn(matcher), _)) => {
+                assert_eq!(matcher(Some(data)), Some(&data["country"]))
+            }
             _ => panic!("Invalid result"),
         }
     }
@@ -327,7 +340,9 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["is_known"])),
+            Ok((SelectionJsonValueLens::Fn(matcher), _)) => {
+                assert_eq!(matcher(Some(data)), Some(&data["is_known"]))
+            }
             _ => panic!("Invalid result"),
         }
     }
@@ -344,7 +359,9 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["is_anonymous"])),
+            Ok((SelectionJsonValueLens::Fn(matcher), _)) => {
+                assert_eq!(matcher(Some(data)), Some(&data["is_anonymous"]))
+            }
             _ => panic!("Invalid result"),
         }
     }
@@ -361,7 +378,9 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data["identity"])),
+            Ok((SelectionJsonValueLens::Fn(matcher), _)) => {
+                assert_eq!(matcher(Some(data)), Some(&data["identity"]))
+            }
             _ => panic!("Invalid result"),
         }
     }

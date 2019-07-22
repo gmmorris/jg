@@ -1,18 +1,14 @@
 use json::JsonValue;
 
-pub fn identity() -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
-    Box::new(|input: Option<&JsonValue>| input)
+use super::SelectionJsonValueLens;
+
+pub fn identity() -> SelectionJsonValueLens {
+    SelectionJsonValueLens::Fn(Box::new(|input: Option<&JsonValue>| input))
 }
 
 pub fn greedily_matches(
     maybe_pattern: Option<&str>,
-) -> Result<
-    (
-        Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
-        Option<&str>,
-    ),
-    Option<&str>,
-> {
+) -> Result<(SelectionJsonValueLens, Option<&str>), Option<&str>> {
     match maybe_pattern {
         Some(pattern) => match pattern {
             "." => Ok((identity(), None)),
@@ -38,7 +34,7 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, unmatched)) => {
+            Ok((SelectionJsonValueLens::Fn(matcher), unmatched)) => {
                 assert_eq!(matcher(Some(data)), Some(data));
                 assert_eq!(unmatched, None);
             }
@@ -58,7 +54,9 @@ mod tests {
 
     #[test]
     fn should_return_none_when_json_isnt_present() {
-        assert_eq!(identity()(None), None);
+        match identity() {
+            SelectionJsonValueLens::Fn(op) => assert_eq!(op(None), None),
+        };
     }
 
     #[test]
@@ -68,6 +66,8 @@ mod tests {
             "age"     => 30
         };
 
-        assert_eq!(identity()(Some(data)).unwrap(), data);
+        match identity() {
+            SelectionJsonValueLens::Fn(op) => assert_eq!(op(Some(data)).unwrap(), data),
+        };
     }
 }

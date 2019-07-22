@@ -2,6 +2,10 @@ use json::JsonValue;
 
 pub type FnJsonValueLens = Fn(Option<&JsonValue>) -> Option<&JsonValue>;
 
+pub enum SelectionJsonValueLens {
+    Fn(Box<FnJsonValueLens>),
+}
+
 mod array_member;
 mod identity;
 mod prop;
@@ -9,14 +13,15 @@ mod sequence;
 mod value_matchers;
 
 pub fn match_json_slice<'a>(
-    matchers: &Vec<Box<FnJsonValueLens>>,
+    matchers: &Vec<SelectionJsonValueLens>,
     json_input: &'a JsonValue,
     match_root_only: bool,
 ) -> Result<&'a JsonValue, ()> {
     match matchers
         .iter()
-        .try_fold(json_input, |json_slice, matcher| matcher(Some(&json_slice)))
-    {
+        .try_fold(json_input, |json_slice, matcher| match matcher {
+            SelectionJsonValueLens::Fn(func) => func(Some(&json_slice)),
+        }) {
         Some(matching_slice) => Ok(matching_slice),
         None => match (match_root_only, json_input) {
             (false, JsonValue::Object(ref object)) => match object
@@ -40,7 +45,7 @@ pub fn match_json_slice<'a>(
     }
 }
 
-pub fn match_filter(filter: &str) -> Result<(Box<FnJsonValueLens>, Option<&str>), &str> {
+pub fn match_filter(filter: &str) -> Result<(SelectionJsonValueLens, Option<&str>), &str> {
     identity::greedily_matches(Some(filter))
         .or_else(|unmatched_filter| prop::greedily_matches(unmatched_filter))
         .or_else(|unmatched_filter| array_member::greedily_matches(unmatched_filter))
@@ -48,8 +53,8 @@ pub fn match_filter(filter: &str) -> Result<(Box<FnJsonValueLens>, Option<&str>)
         .map_err(|_| filter)
 }
 
-pub fn try_to_match_filters(filter: &str) -> Result<Vec<Box<FnJsonValueLens>>, &str> {
-    let mut matchers: Vec<Box<FnJsonValueLens>> = vec![];
+pub fn try_to_match_filters(filter: &str) -> Result<Vec<SelectionJsonValueLens>, &str> {
+    let mut matchers: Vec<SelectionJsonValueLens> = vec![];
     let mut unmatched_filter: Result<Option<&str>, &str> = Ok(Some(filter));
     while let Ok(Some(filter)) = unmatched_filter {
         match match_filter(filter) {
@@ -69,7 +74,7 @@ pub fn try_to_match_filters(filter: &str) -> Result<Vec<Box<FnJsonValueLens>>, &
     }
 }
 
-pub fn match_filters(filter: &str) -> Result<Vec<Box<FnJsonValueLens>>, String> {
+pub fn match_filters(filter: &str) -> Result<Vec<SelectionJsonValueLens>, String> {
     try_to_match_filters(filter)
         .map_err(|unmatched_filter| format!("Invalid filter: {:?}", unmatched_filter))
 }

@@ -1,21 +1,21 @@
 use json::JsonValue;
 use regex::Regex;
 
-use super::value_matchers::*;
+use super::{value_matchers::*, FnJsonValueLens, SelectionJsonValueLens};
 
 enum ArrayMember {
     Index(usize),
     Value(JsonValueMemberMatcher),
 }
 
-fn array_index(index: usize) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
-    Box::new(move |input: Option<&JsonValue>| match input {
+fn array_index(index: usize) -> SelectionJsonValueLens {
+    SelectionJsonValueLens::Fn(Box::new(move |input: Option<&JsonValue>| match input {
         Some(json) => match json {
             JsonValue::Array(ref array) => array.get(index),
             _ => None,
         },
         None => None,
-    })
+    }))
 }
 
 fn member_in_array<'a>(
@@ -42,10 +42,8 @@ fn member_in_array<'a>(
         })
 }
 
-pub fn array_member(
-    member_matcher: JsonValueMemberMatcher,
-) -> Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>> {
-    Box::new(move |input: Option<&JsonValue>| match input {
+pub fn array_member(member_matcher: JsonValueMemberMatcher) -> SelectionJsonValueLens {
+    SelectionJsonValueLens::Fn(Box::new(move |input: Option<&JsonValue>| match input {
         Some(JsonValue::Array(ref array)) => match &member_matcher {
             JsonValueMemberMatcher::Exact(json_value_matcher) => {
                 if array.len() == 1 {
@@ -101,7 +99,7 @@ pub fn array_member(
             }
         },
         _ => None,
-    })
+    }))
 }
 
 fn match_array_index(pattern: &str) -> Option<(ArrayMember, Option<&str>)> {
@@ -144,13 +142,7 @@ fn match_array_index(pattern: &str) -> Option<(ArrayMember, Option<&str>)> {
 
 pub fn greedily_matches(
     maybe_pattern: Option<&str>,
-) -> Result<
-    (
-        Box<Fn(Option<&JsonValue>) -> Option<&JsonValue>>,
-        Option<&str>,
-    ),
-    Option<&str>,
-> {
+) -> Result<(SelectionJsonValueLens, Option<&str>), Option<&str>> {
     match maybe_pattern {
         Some(pattern) => match match_array_index(pattern) {
             Some((ArrayMember::Index(index), remainder)) => Ok((array_index(index), remainder)),
@@ -169,6 +161,12 @@ mod tests {
     use json::array;
     use json::object;
 
+    fn unwrap(op: SelectionJsonValueLens) -> Box<FnJsonValueLens> {
+        match op {
+            SelectionJsonValueLens::Fn(op) => op,
+        }
+    }
+
     #[test]
     fn should_match_array_index() {
         let res = greedily_matches(Some("[0]"));
@@ -180,7 +178,9 @@ mod tests {
         }];
 
         match res {
-            Ok((matcher, _)) => assert_eq!(matcher(Some(data)), Some(&data[0])),
+            Ok((SelectionJsonValueLens::Fn(matcher), _)) => {
+                assert_eq!(matcher(Some(data)), Some(&data[0]))
+            }
             _ => panic!("Invalid result"),
         }
     }
@@ -203,12 +203,12 @@ mod tests {
             "age"     => 30
         }];
 
-        assert_eq!(array_index(0)(Some(data)), Some(&data[0]));
+        assert_eq!(unwrap(array_index(0))(Some(data)), Some(&data[0]));
     }
 
     #[test]
     fn should_return_none_when_json_isnt_present() {
-        assert_eq!(array_index(10)(None), None);
+        assert_eq!(unwrap(array_index(10))(None), None);
     }
 
     #[test]
@@ -216,8 +216,8 @@ mod tests {
         let ref data = array!["Jane Doe"];
 
         assert_eq!(
-            array_member(JsonValueMemberMatcher::Exact(JsonValueMatcher::String(
-                String::from("Jane Doe")
+            unwrap(array_member(JsonValueMemberMatcher::Exact(
+                JsonValueMatcher::String(String::from("Jane Doe"))
             )))(Some(data)),
             Some(&data[0])
         );
@@ -228,14 +228,14 @@ mod tests {
         let ref data = array!["John Doe", "Jane Doe", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."];
 
         assert_eq!(
-            array_member(JsonValueMemberMatcher::ContainsExact(
+            unwrap(array_member(JsonValueMemberMatcher::ContainsExact(
                 JsonValueMatcher::String(String::from("Jane Doe"))
-            ))(Some(data)),
+            )))(Some(data)),
             Some(&data[1])
         );
 
         assert_eq!(
-      array_member(JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::String(String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."))))(Some(data)),
+      unwrap(array_member(JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::String(String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")))))(Some(data)),
       Some(&data[2])
     );
     }
@@ -245,16 +245,16 @@ mod tests {
         let ref data = array![true, false];
 
         assert_eq!(
-            array_member(JsonValueMemberMatcher::ContainsExact(
+            unwrap(array_member(JsonValueMemberMatcher::ContainsExact(
                 JsonValueMatcher::Boolean(true)
-            ))(Some(data)),
+            )))(Some(data)),
             Some(&data[0])
         );
 
         assert_eq!(
-            array_member(JsonValueMemberMatcher::ContainsExact(
+            unwrap(array_member(JsonValueMemberMatcher::ContainsExact(
                 JsonValueMatcher::Boolean(false)
-            ))(Some(data)),
+            )))(Some(data)),
             Some(&data[1])
         );
     }
@@ -264,9 +264,9 @@ mod tests {
         let ref data = array![true, JsonValue::Null];
 
         assert_eq!(
-            array_member(JsonValueMemberMatcher::ContainsExact(
+            unwrap(array_member(JsonValueMemberMatcher::ContainsExact(
                 JsonValueMatcher::Null
-            ))(Some(data)),
+            )))(Some(data)),
             Some(&data[1])
         );
     }
@@ -276,30 +276,30 @@ mod tests {
         let ref data = array![0, -10, 10, 123456789];
 
         assert_eq!(
-            array_member(JsonValueMemberMatcher::ContainsExact(
+            unwrap(array_member(JsonValueMemberMatcher::ContainsExact(
                 JsonValueMatcher::Number(0)
-            ))(Some(data)),
+            )))(Some(data)),
             Some(&data[0])
         );
 
         assert_eq!(
-            array_member(JsonValueMemberMatcher::ContainsExact(
+            unwrap(array_member(JsonValueMemberMatcher::ContainsExact(
                 JsonValueMatcher::Number(-10)
-            ))(Some(data)),
+            )))(Some(data)),
             Some(&data[1])
         );
 
         assert_eq!(
-            array_member(JsonValueMemberMatcher::ContainsExact(
+            unwrap(array_member(JsonValueMemberMatcher::ContainsExact(
                 JsonValueMatcher::Number(10)
-            ))(Some(data)),
+            )))(Some(data)),
             Some(&data[2])
         );
 
         assert_eq!(
-            array_member(JsonValueMemberMatcher::ContainsExact(
+            unwrap(array_member(JsonValueMemberMatcher::ContainsExact(
                 JsonValueMatcher::Number(123456789)
-            ))(Some(data)),
+            )))(Some(data)),
             Some(&data[3])
         );
     }
