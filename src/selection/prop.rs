@@ -125,17 +125,17 @@ pub fn prop(
 
 fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMemberMatcher>, Option<&str>)> {
     lazy_static! {
-      static ref re_prop: Regex =
+      static ref RE_PROP: Regex =
         Regex::new(r#"^\.(?P<prop>([[:word:]])+)(?P<remainder>.+)?$"#).unwrap();
-      static ref re_prop_value: Regex = Regex::new(
+      static ref RE_PROP_VALUE: Regex = Regex::new(
         concat!(r#"^\{"(?P<prop>([[:word:]])+)"("#,r#"(?P<matchingStrategy>(:|~:|\$:|\^:|\*:)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+)))?\}(?P<remainder>.+)?$"#)
       )
       .unwrap();
     }
 
-    match re_prop
+    match RE_PROP
         .captures(pattern)
-        .or(re_prop_value.captures(pattern))
+        .or(RE_PROP_VALUE.captures(pattern))
     {
         Some(cap) => cap
             .name("prop")

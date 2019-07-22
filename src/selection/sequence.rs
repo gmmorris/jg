@@ -17,10 +17,10 @@ pub fn sequence(matchers: Vec<Box<FnJsonValueLens>>) -> Box<FnJsonValueLens> {
 
 fn match_sequence(pattern: &str) -> Option<&str> {
     lazy_static! {
-        static ref re_sequence: Regex = Regex::new(r#"^\[(?P<sequence_matcher>(.)+)\]$"#).unwrap();
+        static ref RE_SEQUENCE: Regex = Regex::new(r#"^\[(?P<sequence_matcher>(.)+)\]$"#).unwrap();
     }
 
-    re_sequence
+    RE_SEQUENCE
         .captures(pattern)
         .and_then(|cap| cap.name("sequence_matcher"))
         .map(|sequence_matcher| sequence_matcher.as_str())

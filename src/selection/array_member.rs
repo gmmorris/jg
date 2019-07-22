@@ -106,15 +106,15 @@ pub fn array_member(
 
 fn match_array_index(pattern: &str) -> Option<(ArrayMember, Option<&str>)> {
     lazy_static! {
-      static ref re_index: Regex =
+      static ref RE_INDEX: Regex =
         Regex::new(r#"^\[(?P<index>([[:digit:]])+)\](?P<remainder>.+)?$"#).unwrap();
-      static ref re_member: Regex = Regex::new(
+      static ref RE_MEMBER: Regex = Regex::new(
         concat!(r#"^\["#,r#"(?P<matchingStrategy>(~=|=|\$=|\^=|\*=)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+))\](?P<remainder>.+)?$"#)
       )
       .unwrap();
     }
 
-    match re_index.captures(pattern) {
+    match RE_INDEX.captures(pattern) {
         Some(captured_index) => captured_index
             .name("index")
             .map(|index| index.as_str())
@@ -128,7 +128,7 @@ fn match_array_index(pattern: &str) -> Option<(ArrayMember, Option<&str>)> {
                         .map(|remainder| remainder.as_str()),
                 )
             }),
-        None => match re_member.captures(pattern) {
+        None => match RE_MEMBER.captures(pattern) {
             Some(cap) => match identify_value_matcher(&cap) {
                 Ok(Some(json_matcher)) => Some((
                     ArrayMember::Value(json_matcher),
