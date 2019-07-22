@@ -1,7 +1,7 @@
 use json::JsonValue;
 use regex::Regex;
 
-use super::{value_matchers::*, SelectionJsonValueLens, SelectionLens};
+use super::{value_matchers::*, SelectionLens};
 
 struct ArrayIndexMember {
     index: usize,
@@ -156,16 +156,15 @@ fn match_array_member(pattern: &str) -> Option<(ArrayMember, Option<&str>)> {
 
 pub fn greedily_matches(
     maybe_pattern: Option<&str>,
-) -> Result<(SelectionJsonValueLens, Option<&str>), Option<&str>> {
+) -> Result<(Box<SelectionLens>, Option<&str>), Option<&str>> {
     match maybe_pattern {
         Some(pattern) => match match_array_member(pattern) {
             Some((array_member, remainder)) => Ok((
-                SelectionJsonValueLens::Lens(
-                    match array_member {
-                        ArrayMember::Index(index) => Box::new(ArrayIndexMember { index }),
-                        ArrayMember::Value(value) => Box::new(ArrayValueMember { value })
-                    }
-                ),
+                match array_member {
+                    ArrayMember::Index(index) => Box::new(ArrayIndexMember { index }),
+                    ArrayMember::Value(value) => Box::new(ArrayValueMember { value })
+                }
+            ,
                 remainder,
             )),
             None => Err(maybe_pattern),
@@ -191,7 +190,7 @@ mod tests {
         }];
 
         match res {
-            Ok((SelectionJsonValueLens::Lens(matcher), _)) => {
+            Ok((matcher, _)) => {
                 assert_eq!(matcher.select(Some(data)), Some(&data[0]))
             }
             _ => panic!("Invalid result"),

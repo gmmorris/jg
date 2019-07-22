@@ -1,18 +1,24 @@
 use json::JsonValue;
 use regex::Regex;
 
-use super::{match_json_slice, try_to_match_filters, SelectionJsonValueLens};
+use super::{match_json_slice, try_to_match_filters, SelectionLens};
 
-pub fn sequence(matchers: Vec<SelectionJsonValueLens>) -> SelectionJsonValueLens {
-    SelectionJsonValueLens::Fn(Box::new(move |input: Option<&JsonValue>| match input {
-        Some(json) => match json {
-            JsonValue::Array(ref array) => array
-                .iter()
-                .find(|member| match_json_slice(&matchers, member, true).is_ok()),
-            _ => None,
-        },
-        None => None,
-    }))
+struct Sequence {
+    matchers: Vec<Box<SelectionLens>>,
+}
+
+impl SelectionLens for Sequence {
+    fn select<'a>(&self, input: Option<&'a JsonValue>) -> Option<&'a JsonValue> {
+        match input {
+            Some(json) => match json {
+                JsonValue::Array(ref array) => array
+                    .iter()
+                    .find(|member| match_json_slice(&self.matchers, member, true).is_ok()),
+                _ => None,
+            },
+            None => None,
+        }
+    }
 }
 
 fn match_sequence(pattern: &str) -> Option<&str> {
@@ -28,12 +34,12 @@ fn match_sequence(pattern: &str) -> Option<&str> {
 
 pub fn greedily_matches(
     maybe_pattern: Option<&str>,
-) -> Result<(SelectionJsonValueLens, Option<&str>), Option<&str>> {
+) -> Result<(Box<SelectionLens>, Option<&str>), Option<&str>> {
     match maybe_pattern
         .and_then(match_sequence)
         .map(try_to_match_filters)
     {
-        Some(Ok(matchers)) => Ok((sequence(matchers), None)),
+        Some(Ok(matchers)) => Ok((Box::new(Sequence { matchers }), None)),
         _ => Err(maybe_pattern),
     }
 }
@@ -58,8 +64,8 @@ mod tests {
         };
 
         match res {
-            Ok((SelectionJsonValueLens::Fn(matcher), _)) => assert_eq!(
-                matcher(Some(&data["identities"])),
+            Ok((matcher, _)) => assert_eq!(
+                matcher.select(Some(&data["identities"])),
                 Some(&data["identities"][0])
             ),
             _ => panic!("Invalid result"),
@@ -73,12 +79,10 @@ mod tests {
           "age"     => 30,
           "identities" => array![]
         };
-        assert_eq!(
-            match sequence(try_to_match_filters(".").unwrap()) {
-                SelectionJsonValueLens::Fn(op) => op(Some(&data["identities"])),
-                SelectionJsonValueLens::Lens(_) => panic!("no implemented"),
-            },
-            None
-        );
+        let sequence = Sequence {
+            matchers: try_to_match_filters(".").unwrap(),
+        };
+
+        assert_eq!(sequence.select(Some(&data["identities"])), None);
     }
 }

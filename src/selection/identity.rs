@@ -1,6 +1,6 @@
 use json::JsonValue;
 
-use super::{SelectionJsonValueLens, SelectionLens};
+use super::{SelectionLens};
 
 struct Identity;
 impl SelectionLens for Identity {
@@ -11,10 +11,10 @@ impl SelectionLens for Identity {
 
 pub fn greedily_matches(
     maybe_pattern: Option<&str>,
-) -> Result<(SelectionJsonValueLens, Option<&str>), Option<&str>> {
+) -> Result<(Box<SelectionLens>, Option<&str>), Option<&str>> {
     match maybe_pattern {
         Some(pattern) => match pattern {
-            "." => Ok((SelectionJsonValueLens::Lens(Box::new(Identity {})), None)),
+            "." => Ok((Box::new(Identity {}), None)),
             _ => Err(maybe_pattern),
         },
         None => Err(maybe_pattern),
@@ -37,7 +37,7 @@ mod tests {
         };
 
         match res {
-            Ok((SelectionJsonValueLens::Lens(lens), unmatched)) => {
+            Ok((lens, unmatched)) => {
                 assert_eq!(lens.select(Some(data)), Some(data));
                 assert_eq!(unmatched, None);
             }

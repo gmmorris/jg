@@ -8,7 +8,7 @@ use std::string::String;
 
 mod enumeration;
 use crate::selection::match_json_slice;
-use crate::selection::SelectionJsonValueLens;
+use crate::selection::SelectionLens;
 
 pub enum HighlightMatches {
     Never,
@@ -89,7 +89,7 @@ pub fn in_configured_case(value: &str, config: &Config) -> String {
 }
 
 pub fn match_line(
-    matchers: &Vec<Vec<SelectionJsonValueLens>>,
+    matchers: &Vec<Vec<Box<SelectionLens>>>,
     config: &Config,
     input: String,
 ) -> Result<String, String> {

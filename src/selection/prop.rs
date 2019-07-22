@@ -2,7 +2,7 @@ use json::JsonValue;
 use regex::Regex;
 
 use super::value_matchers::*;
-use super::{SelectionJsonValueLens, SelectionLens};
+use super::{SelectionLens};
 
 struct Prop {
     name: String,
@@ -161,14 +161,14 @@ fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMemberMatcher>, Op
 
 pub fn greedily_matches(
     maybe_pattern: Option<&str>,
-) -> Result<(SelectionJsonValueLens, Option<&str>), Option<&str>> {
+) -> Result<(Box<SelectionLens>, Option<&str>), Option<&str>> {
     match maybe_pattern {
         Some(pattern) => match match_prop(pattern) {
             Some((prop_name, prop_value, remainder)) => Ok((
-                SelectionJsonValueLens::Lens(Box::new(Prop {
+                Box::new(Prop {
                     name: String::from(prop_name),
                     value: prop_value,
-                })),
+                }),
                 remainder,
             )),
             None => Err(maybe_pattern),
@@ -193,7 +193,7 @@ mod tests {
         };
 
         match res {
-            Ok((SelectionJsonValueLens::Lens(matcher), _)) => {
+            Ok((matcher, _)) => {
                 assert_eq!(matcher.select(Some(data)), Some(&data["name"]))
             }
             _ => panic!("Invalid result"),
@@ -256,7 +256,7 @@ mod tests {
         };
 
         match res {
-            Ok((SelectionJsonValueLens::Lens(matcher), _)) => {
+            Ok((matcher, _)) => {
                 assert_eq!(matcher.select(Some(data)), Some(&data["age"]))
             }
             _ => panic!("Invalid result"),
@@ -275,7 +275,7 @@ mod tests {
         };
 
         match res {
-            Ok((SelectionJsonValueLens::Lens(matcher), _)) => {
+            Ok((matcher, _)) => {
                 assert_eq!(matcher.select(Some(data)), Some(&data["country"]))
             }
             _ => panic!("Invalid result"),
@@ -294,7 +294,7 @@ mod tests {
         };
 
         match res {
-            Ok((SelectionJsonValueLens::Lens(matcher), _)) => {
+            Ok((matcher, _)) => {
                 assert_eq!(matcher.select(Some(data)), Some(&data["country"]))
             }
             _ => panic!("Invalid result"),
@@ -313,7 +313,7 @@ mod tests {
         };
 
         match res {
-            Ok((SelectionJsonValueLens::Lens(matcher), _)) => {
+            Ok((matcher, _)) => {
                 assert_eq!(matcher.select(Some(data)), Some(&data["country"]))
             }
             _ => panic!("Invalid result"),
@@ -332,7 +332,7 @@ mod tests {
         };
 
         match res {
-            Ok((SelectionJsonValueLens::Lens(matcher), _)) => {
+            Ok((matcher, _)) => {
                 assert_eq!(matcher.select(Some(data)), Some(&data["country"]))
             }
             _ => panic!("Invalid result"),
@@ -351,7 +351,7 @@ mod tests {
         };
 
         match res {
-            Ok((SelectionJsonValueLens::Lens(matcher), _)) => {
+            Ok((matcher, _)) => {
                 assert_eq!(matcher.select(Some(data)), Some(&data["is_known"]))
             }
             _ => panic!("Invalid result"),
@@ -370,7 +370,7 @@ mod tests {
         };
 
         match res {
-            Ok((SelectionJsonValueLens::Lens(matcher), _)) => {
+            Ok((matcher, _)) => {
                 assert_eq!(matcher.select(Some(data)), Some(&data["is_anonymous"]))
             }
             _ => panic!("Invalid result"),
@@ -389,7 +389,7 @@ mod tests {
         };
 
         match res {
-            Ok((SelectionJsonValueLens::Lens(matcher), _)) => {
+            Ok((matcher, _)) => {
                 assert_eq!(matcher.select(Some(data)), Some(&data["identity"]))
             }
             _ => panic!("Invalid result"),
