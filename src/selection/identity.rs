@@ -1,9 +1,12 @@
 use json::JsonValue;
 
-use super::SelectionJsonValueLens;
+use super::{SelectionJsonValueLens, SelectionLens};
 
-pub fn identity() -> SelectionJsonValueLens {
-    SelectionJsonValueLens::Fn(Box::new(|input: Option<&JsonValue>| input))
+struct Identity;
+impl SelectionLens for Identity {
+    fn select<'a>(&self, input: Option<&'a JsonValue>) -> Option<&'a JsonValue> {
+        input
+    }
 }
 
 pub fn greedily_matches(
@@ -11,7 +14,7 @@ pub fn greedily_matches(
 ) -> Result<(SelectionJsonValueLens, Option<&str>), Option<&str>> {
     match maybe_pattern {
         Some(pattern) => match pattern {
-            "." => Ok((identity(), None)),
+            "." => Ok((SelectionJsonValueLens::Lens(Box::new(Identity {})), None)),
             _ => Err(maybe_pattern),
         },
         None => Err(maybe_pattern),
@@ -34,8 +37,8 @@ mod tests {
         };
 
         match res {
-            Ok((SelectionJsonValueLens::Fn(matcher), unmatched)) => {
-                assert_eq!(matcher(Some(data)), Some(data));
+            Ok((SelectionJsonValueLens::Lens(lens), unmatched)) => {
+                assert_eq!(lens.select(Some(data)), Some(data));
                 assert_eq!(unmatched, None);
             }
             _ => panic!("Invalid result"),
@@ -54,10 +57,8 @@ mod tests {
 
     #[test]
     fn should_return_none_when_json_isnt_present() {
-        match identity() {
-            SelectionJsonValueLens::Fn(op) => assert_eq!(op(None), None),
-            SelectionJsonValueLens::Lens(_) => panic!("no implemented"),
-        };
+        let identity = Identity {};
+        assert_eq!(identity.select(None), None);
     }
 
     #[test]
@@ -67,9 +68,7 @@ mod tests {
             "age"     => 30
         };
 
-        match identity() {
-            SelectionJsonValueLens::Fn(op) => assert_eq!(op(Some(data)).unwrap(), data),
-            SelectionJsonValueLens::Lens(_) => panic!("no implemented"),
-        };
+        let identity = Identity {};
+        assert_eq!(identity.select(Some(data)).unwrap(), data);
     }
 }
