@@ -164,6 +164,7 @@ mod tests {
     fn unwrap(op: SelectionJsonValueLens) -> Box<FnJsonValueLens> {
         match op {
             SelectionJsonValueLens::Fn(op) => op,
+            SelectionJsonValueLens::Lens(_) => panic!("no implemented"),
         }
     }
 

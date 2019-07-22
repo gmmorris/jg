@@ -56,6 +56,7 @@ mod tests {
     fn should_return_none_when_json_isnt_present() {
         match identity() {
             SelectionJsonValueLens::Fn(op) => assert_eq!(op(None), None),
+            SelectionJsonValueLens::Lens(_) => panic!("no implemented"),
         };
     }
 
@@ -68,6 +69,7 @@ mod tests {
 
         match identity() {
             SelectionJsonValueLens::Fn(op) => assert_eq!(op(Some(data)).unwrap(), data),
+            SelectionJsonValueLens::Lens(_) => panic!("no implemented"),
         };
     }
 }

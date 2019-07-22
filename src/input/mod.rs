@@ -8,7 +8,7 @@ use std::string::String;
 
 mod enumeration;
 use crate::selection::match_json_slice;
-use crate::selection::{FnJsonValueLens, SelectionJsonValueLens};
+use crate::selection::SelectionJsonValueLens;
 
 pub enum HighlightMatches {
     Never,

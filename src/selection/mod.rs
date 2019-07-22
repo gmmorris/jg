@@ -1,9 +1,13 @@
 use json::JsonValue;
 
 pub type FnJsonValueLens = Fn(Option<&JsonValue>) -> Option<&JsonValue>;
+pub trait SelectionLens {
+    fn select<'a>(&self, input: Option<&'a JsonValue>) -> Option<&'a JsonValue>;
+}
 
 pub enum SelectionJsonValueLens {
     Fn(Box<FnJsonValueLens>),
+    Lens(Box<SelectionLens>),
 }
 
 mod array_member;
@@ -21,6 +25,7 @@ pub fn match_json_slice<'a>(
         .iter()
         .try_fold(json_input, |json_slice, matcher| match matcher {
             SelectionJsonValueLens::Fn(func) => func(Some(&json_slice)),
+            SelectionJsonValueLens::Lens(func) => func.select(Some(&json_slice)),
         }) {
         Some(matching_slice) => Ok(matching_slice),
         None => match (match_root_only, json_input) {

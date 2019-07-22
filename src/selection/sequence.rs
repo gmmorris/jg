@@ -76,6 +76,7 @@ mod tests {
         assert_eq!(
             match sequence(try_to_match_filters(".").unwrap()) {
                 SelectionJsonValueLens::Fn(op) => op(Some(&data["identities"])),
+                SelectionJsonValueLens::Lens(_) => panic!("no implemented"),
             },
             None
         );
