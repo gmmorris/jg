@@ -2,7 +2,7 @@ use json::JsonValue;
 use regex::Regex;
 
 use super::value_matchers::*;
-use super::{SelectionLens};
+use super::{SelectionLens, SelectionLensParser};
 
 struct Prop {
     name: String,
@@ -130,50 +130,54 @@ impl SelectionLens for Prop {
     }
 }
 
+pub struct PropParser;
+impl PropParser {
+    fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMemberMatcher>, Option<&str>)> {
+        lazy_static! {
+            static ref RE_PROP: Regex =
+                Regex::new(r#"^\.(?P<prop>([[:word:]])+)(?P<remainder>.+)?$"#).unwrap();
+            static ref RE_PROP_VALUE: Regex = Regex::new(
+                concat!(r#"^\{"(?P<prop>([[:word:]])+)"("#,r#"(?P<matchingStrategy>(:|~:|\$:|\^:|\*:)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+)))?\}(?P<remainder>.+)?$"#)
+            )
+            .unwrap();
+        }
 
-fn match_prop(pattern: &str) -> Option<(&str, Option<JsonValueMemberMatcher>, Option<&str>)> {
-    lazy_static! {
-      static ref RE_PROP: Regex =
-        Regex::new(r#"^\.(?P<prop>([[:word:]])+)(?P<remainder>.+)?$"#).unwrap();
-      static ref RE_PROP_VALUE: Regex = Regex::new(
-        concat!(r#"^\{"(?P<prop>([[:word:]])+)"("#,r#"(?P<matchingStrategy>(:|~:|\$:|\^:|\*:)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+)))?\}(?P<remainder>.+)?$"#)
-      )
-      .unwrap();
-    }
-
-    match RE_PROP
-        .captures(pattern)
-        .or(RE_PROP_VALUE.captures(pattern))
-    {
-        Some(cap) => cap
-            .name("prop")
-            .and_then(|prop| match identify_value_matcher(&cap) {
-                Ok(json_matcher) => Some((
-                    prop.as_str(),
-                    json_matcher,
-                    cap.name("remainder").map(|remainder| remainder.as_str()),
-                )),
-                Err(_) => None,
-            }),
-        None => None,
+        match RE_PROP
+            .captures(pattern)
+            .or(RE_PROP_VALUE.captures(pattern))
+        {
+            Some(cap) => cap
+                .name("prop")
+                .and_then(|prop| match identify_value_matcher(&cap) {
+                    Ok(json_matcher) => Some((
+                        prop.as_str(),
+                        json_matcher,
+                        cap.name("remainder").map(|remainder| remainder.as_str()),
+                    )),
+                    Err(_) => None,
+                }),
+            None => None,
+        }
     }
 }
-
-pub fn greedily_matches(
-    maybe_pattern: Option<&str>,
-) -> Result<(Box<SelectionLens>, Option<&str>), Option<&str>> {
-    match maybe_pattern {
-        Some(pattern) => match match_prop(pattern) {
-            Some((prop_name, prop_value, remainder)) => Ok((
-                Box::new(Prop {
-                    name: String::from(prop_name),
-                    value: prop_value,
-                }),
-                remainder,
-            )),
-            None => Err(maybe_pattern),
-        },
-        None => Err(maybe_pattern),
+impl SelectionLensParser for PropParser {
+    fn try_parse<'a>(
+        &self,
+        lens_pattern: Option<&'a str>,
+    ) -> Result<(Box<SelectionLens>, Option<&'a str>), Option<&'a str>> {
+        match lens_pattern {
+            Some(pattern) => match PropParser::match_prop(pattern) {
+                Some((prop_name, prop_value, remainder)) => Ok((
+                    Box::new(Prop {
+                        name: String::from(prop_name),
+                        value: prop_value,
+                    }),
+                    remainder,
+                )),
+                None => Err(lens_pattern),
+            },
+            None => Err(lens_pattern),
+        }
     }
 }
 
@@ -184,7 +188,8 @@ mod tests {
 
     #[test]
     fn should_match_prop() {
-        let res = greedily_matches(Some(".name"));
+        let prop_parser = PropParser {};
+        let res = prop_parser.try_parse(Some(".name"));
         assert!(res.is_ok());
 
         let ref data = object! {
@@ -193,16 +198,15 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => {
-                assert_eq!(matcher.select(Some(data)), Some(&data["name"]))
-            }
+            Ok((matcher, _)) => assert_eq!(matcher.select(Some(data)), Some(&data["name"])),
             _ => panic!("Invalid result"),
         }
     }
 
     #[test]
     fn shouldnt_match_identity() {
-        let res = greedily_matches(Some("."));
+        let prop_parser = PropParser {};
+        let res = prop_parser.try_parse(Some("."));
         assert!(res.is_err());
         match res {
             Err(Some(selector)) => assert_eq!(selector, "."),
@@ -212,7 +216,8 @@ mod tests {
 
     #[test]
     fn should_return_remainder_when_it_matches_prop() {
-        let res = greedily_matches(Some(".father.title"));
+        let prop_parser = PropParser {};
+        let res = prop_parser.try_parse(Some(".father.title"));
         assert!(res.is_ok());
 
         match res {
@@ -247,7 +252,8 @@ mod tests {
 
     #[test]
     fn should_match_number_prop() {
-        let res = greedily_matches(Some(r#"{"age":30}"#));
+        let prop_parser = PropParser {};
+        let res = prop_parser.try_parse(Some(r#"{"age":30}"#));
         assert!(res.is_ok());
 
         let ref data = object! {
@@ -256,16 +262,15 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => {
-                assert_eq!(matcher.select(Some(data)), Some(&data["age"]))
-            }
+            Ok((matcher, _)) => assert_eq!(matcher.select(Some(data)), Some(&data["age"])),
             _ => panic!("Invalid result"),
         }
     }
 
     #[test]
     fn should_match_string_property_value_when_using_exact_matching_strategy() {
-        let res = greedily_matches(Some(r#"{"country":"IRL"}"#));
+        let prop_parser = PropParser {};
+        let res = prop_parser.try_parse(Some(r#"{"country":"IRL"}"#));
         assert!(res.is_ok());
 
         let ref data = object! {
@@ -275,16 +280,15 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => {
-                assert_eq!(matcher.select(Some(data)), Some(&data["country"]))
-            }
+            Ok((matcher, _)) => assert_eq!(matcher.select(Some(data)), Some(&data["country"])),
             _ => panic!("Invalid result"),
         }
     }
 
     #[test]
     fn should_match_string_property_value_when_using_contains_exact_matching_strategy() {
-        let res = greedily_matches(Some(r#"{"country"~:"GBR"}"#));
+        let prop_parser = PropParser {};
+        let res = prop_parser.try_parse(Some(r#"{"country"~:"GBR"}"#));
         assert!(res.is_ok());
 
         let ref data = object! {
@@ -294,16 +298,15 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => {
-                assert_eq!(matcher.select(Some(data)), Some(&data["country"]))
-            }
+            Ok((matcher, _)) => assert_eq!(matcher.select(Some(data)), Some(&data["country"])),
             _ => panic!("Invalid result"),
         }
     }
 
     #[test]
     fn should_match_string_property_value_when_using_prefixed_matching_strategy() {
-        let res = greedily_matches(Some(r#"{"country"^:"IRL"}"#));
+        let prop_parser = PropParser {};
+        let res = prop_parser.try_parse(Some(r#"{"country"^:"IRL"}"#));
         assert!(res.is_ok());
 
         let ref data = object! {
@@ -313,16 +316,15 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => {
-                assert_eq!(matcher.select(Some(data)), Some(&data["country"]))
-            }
+            Ok((matcher, _)) => assert_eq!(matcher.select(Some(data)), Some(&data["country"])),
             _ => panic!("Invalid result"),
         }
     }
 
     #[test]
     fn should_match_string_property_value_when_using_suffixed_matching_strategy() {
-        let res = greedily_matches(Some(r#"{"country"$:"GBR"}"#));
+        let prop_parser = PropParser {};
+        let res = prop_parser.try_parse(Some(r#"{"country"$:"GBR"}"#));
         assert!(res.is_ok());
 
         let ref data = object! {
@@ -332,16 +334,15 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => {
-                assert_eq!(matcher.select(Some(data)), Some(&data["country"]))
-            }
+            Ok((matcher, _)) => assert_eq!(matcher.select(Some(data)), Some(&data["country"])),
             _ => panic!("Invalid result"),
         }
     }
 
     #[test]
     fn should_match_boolean_false_prop() {
-        let res = greedily_matches(Some(r#"{"is_known":false}"#));
+        let prop_parser = PropParser {};
+        let res = prop_parser.try_parse(Some(r#"{"is_known":false}"#));
         assert!(res.is_ok());
 
         let ref data = object! {
@@ -351,16 +352,15 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => {
-                assert_eq!(matcher.select(Some(data)), Some(&data["is_known"]))
-            }
+            Ok((matcher, _)) => assert_eq!(matcher.select(Some(data)), Some(&data["is_known"])),
             _ => panic!("Invalid result"),
         }
     }
 
     #[test]
     fn should_match_boolean_true_prop() {
-        let res = greedily_matches(Some(r#"{"is_anonymous":true}"#));
+        let prop_parser = PropParser {};
+        let res = prop_parser.try_parse(Some(r#"{"is_anonymous":true}"#));
         assert!(res.is_ok());
 
         let ref data = object! {
@@ -370,16 +370,15 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => {
-                assert_eq!(matcher.select(Some(data)), Some(&data["is_anonymous"]))
-            }
+            Ok((matcher, _)) => assert_eq!(matcher.select(Some(data)), Some(&data["is_anonymous"])),
             _ => panic!("Invalid result"),
         }
     }
 
     #[test]
     fn should_match_null_prop() {
-        let res = greedily_matches(Some(r#"{"identity":null}"#));
+        let prop_parser = PropParser {};
+        let res = prop_parser.try_parse(Some(r#"{"identity":null}"#));
         assert!(res.is_ok());
 
         let ref data = object! {
@@ -389,9 +388,7 @@ mod tests {
         };
 
         match res {
-            Ok((matcher, _)) => {
-                assert_eq!(matcher.select(Some(data)), Some(&data["identity"]))
-            }
+            Ok((matcher, _)) => assert_eq!(matcher.select(Some(data)), Some(&data["identity"])),
             _ => panic!("Invalid result"),
         }
     }
