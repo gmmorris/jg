@@ -4,6 +4,13 @@ pub trait SelectionLens {
     fn select<'a>(&self, input: Option<&'a JsonValue>) -> Option<&'a JsonValue>;
 }
 
+pub trait SelectionLensParser {
+    fn try_parse<'a>(
+        &self,
+        lens_pattern: Option<&'a str>,
+    ) -> Result<(Box<SelectionLens>, Option<&'a str>), Option<&'a str>>;
+}
+
 mod array_member;
 mod identity;
 mod prop;
@@ -15,9 +22,9 @@ pub fn match_json_slice<'a>(
     json_input: &'a JsonValue,
     match_root_only: bool,
 ) -> Result<&'a JsonValue, ()> {
-    match matchers
-        .iter()
-        .try_fold(json_input, |json_slice, matcher| matcher.select(Some(&json_slice))) {
+    match matchers.iter().try_fold(json_input, |json_slice, matcher| {
+        matcher.select(Some(&json_slice))
+    }) {
         Some(matching_slice) => Ok(matching_slice),
         None => match (match_root_only, json_input) {
             (false, JsonValue::Object(ref object)) => match object
@@ -42,7 +49,11 @@ pub fn match_json_slice<'a>(
 }
 
 pub fn match_filter(filter: &str) -> Result<(Box<SelectionLens>, Option<&str>), &str> {
-    identity::greedily_matches(Some(filter))
+    lazy_static! {
+        static ref IDENTITY_PARSER: identity::IdentityParser = identity::IdentityParser {};
+    }
+    IDENTITY_PARSER
+        .try_parse(Some(filter))
         .or_else(|unmatched_filter| prop::greedily_matches(unmatched_filter))
         .or_else(|unmatched_filter| array_member::greedily_matches(unmatched_filter))
         .or_else(|unmatched_filter| sequence::greedily_matches(unmatched_filter))

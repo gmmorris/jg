@@ -1,6 +1,6 @@
 use json::JsonValue;
 
-use super::{SelectionLens};
+use super::{SelectionLens, SelectionLensParser};
 
 struct Identity;
 impl SelectionLens for Identity {
@@ -9,15 +9,19 @@ impl SelectionLens for Identity {
     }
 }
 
-pub fn greedily_matches(
-    maybe_pattern: Option<&str>,
-) -> Result<(Box<SelectionLens>, Option<&str>), Option<&str>> {
-    match maybe_pattern {
-        Some(pattern) => match pattern {
-            "." => Ok((Box::new(Identity {}), None)),
-            _ => Err(maybe_pattern),
-        },
-        None => Err(maybe_pattern),
+pub struct IdentityParser;
+impl SelectionLensParser for IdentityParser {
+    fn try_parse<'a>(
+        &self,
+        lens_pattern: Option<&'a str>,
+    ) -> Result<(Box<SelectionLens>, Option<&'a str>), Option<&'a str>> {
+        match lens_pattern {
+            Some(pattern) => match pattern {
+                "." => Ok((Box::new(Identity {}), None)),
+                _ => Err(lens_pattern),
+            },
+            None => Err(lens_pattern),
+        }
     }
 }
 
@@ -28,7 +32,8 @@ mod tests {
 
     #[test]
     fn should_match_dot() {
-        let res = greedily_matches(Some("."));
+        let identity_parser = IdentityParser {};
+        let res = identity_parser.try_parse(Some("."));
         assert!(res.is_ok());
 
         let ref data = object! {
@@ -47,7 +52,8 @@ mod tests {
 
     #[test]
     fn shouldnt_match_anything_else() {
-        let res = greedily_matches(Some(".prop"));
+        let identity_parser = IdentityParser {};
+        let res = identity_parser.try_parse(Some(".prop"));
         assert!(res.is_err());
         match res {
             Err(Some(selector)) => assert_eq!(selector, ".prop"),
