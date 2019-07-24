@@ -52,12 +52,13 @@ pub fn match_filter(filter: &str) -> Result<(Box<SelectionLens>, Option<&str>), 
     lazy_static! {
         static ref IDENTITY_PARSER: identity::IdentityParser = identity::IdentityParser {};
         static ref PROP_PARSER: prop::PropParser = prop::PropParser {};
+        static ref SEQUENCE_PARSER: sequence::SequenceParser = sequence::SequenceParser {};
     }
     IDENTITY_PARSER
         .try_parse(Some(filter))
         .or_else(|unmatched_filter| PROP_PARSER.try_parse(unmatched_filter))
         .or_else(|unmatched_filter| array_member::greedily_matches(unmatched_filter))
-        .or_else(|unmatched_filter| sequence::greedily_matches(unmatched_filter))
+        .or_else(|unmatched_filter| SEQUENCE_PARSER.try_parse(unmatched_filter))
         .map_err(|_| filter)
 }
 

@@ -1,7 +1,7 @@
 use json::JsonValue;
 use regex::Regex;
 
-use super::{match_json_slice, try_to_match_filters, SelectionLens};
+use super::{match_json_slice, try_to_match_filters, SelectionLens, SelectionLensParser};
 
 struct Sequence {
     matchers: Vec<Box<SelectionLens>>,
@@ -21,26 +21,33 @@ impl SelectionLens for Sequence {
     }
 }
 
-fn match_sequence(pattern: &str) -> Option<&str> {
-    lazy_static! {
-        static ref RE_SEQUENCE: Regex = Regex::new(r#"^\[(?P<sequence_matcher>(.)+)\]$"#).unwrap();
+
+pub struct SequenceParser;
+impl SequenceParser {
+    fn match_sequence(pattern: &str) -> Option<&str> {
+        lazy_static! {
+            static ref RE_SEQUENCE: Regex =
+                Regex::new(r#"^\[(?P<sequence_matcher>(.)+)\]$"#).unwrap();
+        }
+
+        RE_SEQUENCE
+            .captures(pattern)
+            .and_then(|cap| cap.name("sequence_matcher"))
+            .map(|sequence_matcher| sequence_matcher.as_str())
     }
-
-    RE_SEQUENCE
-        .captures(pattern)
-        .and_then(|cap| cap.name("sequence_matcher"))
-        .map(|sequence_matcher| sequence_matcher.as_str())
 }
-
-pub fn greedily_matches(
-    maybe_pattern: Option<&str>,
-) -> Result<(Box<SelectionLens>, Option<&str>), Option<&str>> {
-    match maybe_pattern
-        .and_then(match_sequence)
-        .map(try_to_match_filters)
-    {
-        Some(Ok(matchers)) => Ok((Box::new(Sequence { matchers }), None)),
-        _ => Err(maybe_pattern),
+impl SelectionLensParser for SequenceParser {
+    fn try_parse<'a>(
+        &self,
+        lens_pattern: Option<&'a str>,
+    ) -> Result<(Box<SelectionLens>, Option<&'a str>), Option<&'a str>> {
+        match lens_pattern
+            .and_then(SequenceParser::match_sequence)
+            .map(try_to_match_filters)
+        {
+            Some(Ok(matchers)) => Ok((Box::new(Sequence { matchers }), None)),
+            _ => Err(lens_pattern),
+        }
     }
 }
 
@@ -52,7 +59,8 @@ mod tests {
 
     #[test]
     fn should_match_json_in_sequence_when_matching_query() {
-        let res = greedily_matches(Some("[.name]"));
+        let sequence_parser = SequenceParser {};
+        let res = sequence_parser.try_parse(Some("[.name]"));
         assert!(res.is_ok());
 
         let ref data = object! {
@@ -81,11 +89,10 @@ mod tests {
           "identities" => array![]
         };
 
-        let sequence = Sequence { matchers: try_to_match_filters(".").unwrap() };
+        let sequence = Sequence {
+            matchers: try_to_match_filters(".").unwrap(),
+        };
 
-        assert_eq!(
-            sequence.select(Some(&data["identities"])),
-            None
-        );
+        assert_eq!(sequence.select(Some(&data["identities"])), None);
     }
 }
