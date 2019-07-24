@@ -21,7 +21,6 @@ impl SelectionLens for Sequence {
     }
 }
 
-
 pub struct SequenceParser;
 impl SequenceParser {
     fn match_sequence(pattern: &str) -> Option<&str> {

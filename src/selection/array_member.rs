@@ -1,7 +1,7 @@
 use json::JsonValue;
 use regex::Regex;
 
-use super::{value_matchers::*, SelectionLens};
+use super::{value_matchers::*, SelectionLens, SelectionLensParser};
 
 struct ArrayIndexMember {
     index: usize,
@@ -116,60 +116,65 @@ enum ArrayMember {
     Value(JsonValueMemberMatcher),
 }
 
-fn match_array_member(pattern: &str) -> Option<(ArrayMember, Option<&str>)> {
-    lazy_static! {
-      static ref RE_INDEX: Regex =
-        Regex::new(r#"^\[(?P<index>([[:digit:]])+)\](?P<remainder>.+)?$"#).unwrap();
-      static ref RE_MEMBER: Regex = Regex::new(
-        concat!(r#"^\["#,r#"(?P<matchingStrategy>(~=|=|\$=|\^=|\*=)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+))\](?P<remainder>.+)?$"#)
-      )
-      .unwrap();
-    }
+pub struct ArrayMemberParser;
+impl ArrayMemberParser {
+    fn match_array_member(pattern: &str) -> Option<(ArrayMember, Option<&str>)> {
+        lazy_static! {
+        static ref RE_INDEX: Regex =
+            Regex::new(r#"^\[(?P<index>([[:digit:]])+)\](?P<remainder>.+)?$"#).unwrap();
+        static ref RE_MEMBER: Regex = Regex::new(
+            concat!(r#"^\["#,r#"(?P<matchingStrategy>(~=|=|\$=|\^=|\*=)+)"#,r#"("(?P<stringValue>([^"])+)"|(?P<numberValue>([[:digit:]]+)+)|(?P<literalValue>([[:word:]])+))\](?P<remainder>.+)?$"#)
+        )
+        .unwrap();
+        }
 
-    match RE_INDEX.captures(pattern) {
-        Some(captured_index) => captured_index
-            .name("index")
-            .map(|index| index.as_str())
-            .map(|index| usize::from_str_radix(index, 32))
-            .filter(|index| index.is_ok())
-            .map(|index| {
-                (
-                    ArrayMember::Index(index.unwrap()),
-                    captured_index
-                        .name("remainder")
-                        .map(|remainder| remainder.as_str()),
-                )
-            }),
-        None => match RE_MEMBER.captures(pattern) {
-            Some(cap) => match identify_value_matcher(&cap) {
-                Ok(Some(json_matcher)) => Some((
-                    ArrayMember::Value(json_matcher),
-                    cap.name("remainder").map(|remainder| remainder.as_str()),
-                )),
-                Ok(None) => None,
-                Err(_) => None,
+        match RE_INDEX.captures(pattern) {
+            Some(captured_index) => captured_index
+                .name("index")
+                .map(|index| index.as_str())
+                .map(|index| usize::from_str_radix(index, 32))
+                .filter(|index| index.is_ok())
+                .map(|index| {
+                    (
+                        ArrayMember::Index(index.unwrap()),
+                        captured_index
+                            .name("remainder")
+                            .map(|remainder| remainder.as_str()),
+                    )
+                }),
+            None => match RE_MEMBER.captures(pattern) {
+                Some(cap) => match identify_value_matcher(&cap) {
+                    Ok(Some(json_matcher)) => Some((
+                        ArrayMember::Value(json_matcher),
+                        cap.name("remainder").map(|remainder| remainder.as_str()),
+                    )),
+                    Ok(None) => None,
+                    Err(_) => None,
+                },
+                None => None,
             },
-            None => None,
-        },
+        }
     }
 }
-
-pub fn greedily_matches(
-    maybe_pattern: Option<&str>,
-) -> Result<(Box<SelectionLens>, Option<&str>), Option<&str>> {
-    match maybe_pattern {
-        Some(pattern) => match match_array_member(pattern) {
-            Some((array_member, remainder)) => Ok((
-                match array_member {
-                    ArrayMember::Index(index) => Box::new(ArrayIndexMember { index }),
-                    ArrayMember::Value(value) => Box::new(ArrayValueMember { value })
-                }
-            ,
-                remainder,
-            )),
-            None => Err(maybe_pattern),
-        },
-        None => Err(maybe_pattern),
+impl SelectionLensParser for ArrayMemberParser {
+    fn try_parse<'a>(
+        &self,
+        lens_pattern: Option<&'a str>,
+    ) -> Result<(Box<SelectionLens>, Option<&'a str>), Option<&'a str>> {
+        match lens_pattern {
+            Some(pattern) => match ArrayMemberParser::match_array_member(pattern) {
+                Some((array_member, remainder)) => Ok((
+                    match array_member {
+                        ArrayMember::Index(index) => Box::new(ArrayIndexMember { index }),
+                        ArrayMember::Value(value) => Box::new(ArrayValueMember { value })
+                    }
+                ,
+                    remainder,
+                )),
+                None => Err(lens_pattern),
+            },
+            None => Err(lens_pattern),
+        }
     }
 }
 
@@ -181,7 +186,8 @@ mod tests {
 
     #[test]
     fn should_match_array_index() {
-        let res = greedily_matches(Some("[0]"));
+        let array_member_parser = ArrayMemberParser {};
+        let res = array_member_parser.try_parse(Some("[0]"));
         assert!(res.is_ok());
 
         let ref data = array![object! {
@@ -199,7 +205,8 @@ mod tests {
 
     #[test]
     fn should_return_remainder_when_it_matches_index() {
-        let res = greedily_matches(Some("[0].title"));
+        let array_member_parser = ArrayMemberParser {};
+        let res = array_member_parser.try_parse(Some("[0].title"));
         assert!(res.is_ok());
 
         match res {
