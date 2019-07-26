@@ -71,7 +71,6 @@ mod tests {
         };
 
         match res {
-
             Ok((matcher, _)) => assert_eq!(
                 matcher.select(Some(&data["identities"])),
                 Some(&data["identities"][0])

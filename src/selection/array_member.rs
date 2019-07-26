@@ -67,9 +67,10 @@ impl SelectionLens for ArrayValueMember {
                     array
                         .iter()
                         .find(|member| match (member, json_value_matcher) {
-                            (JsonValue::Short(string_prop), JsonValueMatcher::String(string_value)) => {
-                                string_prop.starts_with(string_value)
-                            }
+                            (
+                                JsonValue::Short(string_prop),
+                                JsonValueMatcher::String(string_value),
+                            ) => string_prop.starts_with(string_value),
                             (
                                 JsonValue::String(string_prop),
                                 JsonValueMatcher::String(string_value),
@@ -81,9 +82,10 @@ impl SelectionLens for ArrayValueMember {
                     array
                         .iter()
                         .find(|member| match (member, json_value_matcher) {
-                            (JsonValue::Short(string_prop), JsonValueMatcher::String(string_value)) => {
-                                string_prop.ends_with(string_value)
-                            }
+                            (
+                                JsonValue::Short(string_prop),
+                                JsonValueMatcher::String(string_value),
+                            ) => string_prop.ends_with(string_value),
                             (
                                 JsonValue::String(string_prop),
                                 JsonValueMatcher::String(string_value),
@@ -95,9 +97,10 @@ impl SelectionLens for ArrayValueMember {
                     array
                         .iter()
                         .find(|member| match (member, json_value_matcher) {
-                            (JsonValue::Short(string_prop), JsonValueMatcher::String(string_value)) => {
-                                string_prop.contains(string_value)
-                            }
+                            (
+                                JsonValue::Short(string_prop),
+                                JsonValueMatcher::String(string_value),
+                            ) => string_prop.contains(string_value),
                             (
                                 JsonValue::String(string_prop),
                                 JsonValueMatcher::String(string_value),
@@ -166,9 +169,8 @@ impl SelectionLensParser for ArrayMemberParser {
                 Some((array_member, remainder)) => Ok((
                     match array_member {
                         ArrayMember::Index(index) => Box::new(ArrayIndexMember { index }),
-                        ArrayMember::Value(value) => Box::new(ArrayValueMember { value })
-                    }
-                ,
+                        ArrayMember::Value(value) => Box::new(ArrayValueMember { value }),
+                    },
                     remainder,
                 )),
                 None => Err(lens_pattern),
@@ -196,9 +198,7 @@ mod tests {
         }];
 
         match res {
-            Ok((matcher, _)) => {
-                assert_eq!(matcher.select(Some(data)), Some(&data[0]))
-            }
+            Ok((matcher, _)) => assert_eq!(matcher.select(Some(data)), Some(&data[0])),
             _ => panic!("Invalid result"),
         }
     }
@@ -236,8 +236,10 @@ mod tests {
     fn should_return_node_when_exact_string_value_is_only_value_in_array() {
         let ref data = array!["Jane Doe"];
 
-        let array_member = ArrayValueMember { 
-            value: JsonValueMemberMatcher::Exact(JsonValueMatcher::String(String::from("Jane Doe")))
+        let array_member = ArrayValueMember {
+            value: JsonValueMemberMatcher::Exact(JsonValueMatcher::String(String::from(
+                "Jane Doe",
+            ))),
         };
         assert_eq!(array_member.select(Some(data)), Some(&data[0]));
     }
@@ -246,14 +248,14 @@ mod tests {
     fn should_return_node_when_exact_string_value_is_contained_in_array() {
         let ref data = array!["John Doe", "Jane Doe", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."];
 
-        let array_member = ArrayValueMember { 
-            value: JsonValueMemberMatcher::ContainsExact(
-                JsonValueMatcher::String(String::from("Jane Doe"))
-            )
+        let array_member = ArrayValueMember {
+            value: JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::String(String::from(
+                "Jane Doe",
+            ))),
         };
         assert_eq!(array_member.select(Some(data)), Some(&data[1]));
 
-        let array_member = ArrayValueMember { 
+        let array_member = ArrayValueMember {
             value: JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::String(String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")))
         };
         assert_eq!(array_member.select(Some(data)), Some(&data[2]));
@@ -263,17 +265,13 @@ mod tests {
     fn should_return_node_when_boolean_value_is_present_in_array() {
         let ref data = array![true, false];
 
-        let array_member = ArrayValueMember { 
-            value: JsonValueMemberMatcher::ContainsExact(
-                JsonValueMatcher::Boolean(true)
-            )
+        let array_member = ArrayValueMember {
+            value: JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::Boolean(true)),
         };
         assert_eq!(array_member.select(Some(data)), Some(&data[0]));
-        
-        let array_member = ArrayValueMember { 
-            value: JsonValueMemberMatcher::ContainsExact(
-                JsonValueMatcher::Boolean(false)
-            )
+
+        let array_member = ArrayValueMember {
+            value: JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::Boolean(false)),
         };
         assert_eq!(array_member.select(Some(data)), Some(&data[1]));
     }
@@ -282,10 +280,8 @@ mod tests {
     fn should_return_node_when_null_value_is_present_in_array() {
         let ref data = array![true, JsonValue::Null];
 
-        let array_member = ArrayValueMember { 
-            value: JsonValueMemberMatcher::ContainsExact(
-                JsonValueMatcher::Null
-            )
+        let array_member = ArrayValueMember {
+            value: JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::Null),
         };
         assert_eq!(array_member.select(Some(data)), Some(&data[1]));
     }
@@ -294,31 +290,23 @@ mod tests {
     fn should_return_node_when_numeric_value_is_present_in_array() {
         let ref data = array![0, -10, 10, 123456789];
 
-        let array_member = ArrayValueMember { 
-            value: JsonValueMemberMatcher::ContainsExact(
-                JsonValueMatcher::Number(0)
-            )
+        let array_member = ArrayValueMember {
+            value: JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::Number(0)),
         };
         assert_eq!(array_member.select(Some(data)), Some(&data[0]));
 
-        let array_member = ArrayValueMember { 
-            value: JsonValueMemberMatcher::ContainsExact(
-                JsonValueMatcher::Number(-10)
-            )
+        let array_member = ArrayValueMember {
+            value: JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::Number(-10)),
         };
         assert_eq!(array_member.select(Some(data)), Some(&data[1]));
 
-        let array_member = ArrayValueMember { 
-            value: JsonValueMemberMatcher::ContainsExact(
-                JsonValueMatcher::Number(10)
-            )
+        let array_member = ArrayValueMember {
+            value: JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::Number(10)),
         };
         assert_eq!(array_member.select(Some(data)), Some(&data[2]));
 
-        let array_member = ArrayValueMember { 
-            value: JsonValueMemberMatcher::ContainsExact(
-                JsonValueMatcher::Number(123456789)
-            )
+        let array_member = ArrayValueMember {
+            value: JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::Number(123456789)),
         };
         assert_eq!(array_member.select(Some(data)), Some(&data[3]));
     }
