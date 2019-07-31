@@ -1,9 +1,9 @@
 [![Travis shield](https://travis-ci.org/gmmorris/jg.svg)](https://travis-ci.org/gmmorris/jg)
 
-**Jeff Goldblum** / **jg** is a command-line JSON processor which searches for structural patterns in json input and prints each json object that matches the pattern.
+**Jeff Goldblum** / **jg** is a command-line JSON processor which searches for structural patterns in json using Newline-Delimited JSON formatted input and prints each json object that matches the pattern.
 
 ## **SUMMARY**
-1. **jg** is designed as a drop-in repalcement to **grep** specifically for _JSON structured log files_
+1. **jg** is designed as a drop-in repalcement to **grep** specifically for _Newline-Delimited JSON files_
 1. **jg** reads _each line_ in the file and attempt to read it as valid JSON
 1. **jg** will use the _selector pattern_ that you specify to match against each line in the file
 1. if the line of JSON does in fact match the selector pattern then **jg** will print the line
@@ -11,6 +11,8 @@
 Read all about the reasoning behind the **jg**'s creation here:
 https://gidi.io/2019/03/01/structured-greping-of-structured-logging-using-grep-for-json.html
 
+Read all about Newline-Delimited JSON which is a useful format for log files and streaming structured data here:
+http://ndjson.org/
 * * *
 
 # **SYNOPSIS**
