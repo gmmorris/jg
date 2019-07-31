@@ -17,7 +17,7 @@ pub fn json_grep(config: input::Config) -> Result<(), Option<String>> {
 
     let matched_filters = matched_filters?;
 
-    let has_matched = input::match_input(
+    let has_matched = input::scan_input_for_matching_lines(
         &config,
         &|line| {
             invert_result(

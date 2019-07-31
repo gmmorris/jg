@@ -29,7 +29,7 @@ pub struct Config<'a> {
     pub max_num: Option<usize>,
 }
 
-pub fn match_input<'a>(
+pub fn scan_input_for_matching_lines<'a>(
     config: &Config,
     on_line: &Fn(String) -> Result<String, String>,
     on_result: &Fn(
