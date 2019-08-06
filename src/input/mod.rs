@@ -42,7 +42,7 @@ pub fn scan_input_for_matching_lines<'a>(
         None => Box::new(stdin.lock()) as Box<BufRead>,
     };
 
-    let mut enumerate = enumeration::enumeration(
+    let mut result_enumerator = enumeration::Enumeration::new(
         config.print_line_number,
         config.print_only_count || config.max_num.is_some(),
     );
@@ -52,7 +52,7 @@ pub fn scan_input_for_matching_lines<'a>(
         .map(|line: Result<String, Error>| {
             on_line(line.expect("Could not read line from standard in"))
         })
-        .map(|res| enumerate(res))
+        .map(|res| result_enumerator.enumerate(res))
         .filter(|(_, _, match_result)| match_result.is_ok())
         .map(|res| on_result(res))
         .take_while(|(_, matched_lines)| match config.max_num {
