@@ -101,10 +101,11 @@ fn main() {
         })
         .expect("No matcher pattern has been specified");
 
-
     let config = jg::input::Config {
         matchers: matched_filters,
-        params: matches.values_of("params").map(|values| values.collect::<Vec<_>>()),
+        params: matches
+            .values_of("params")
+            .map(|values| values.collect::<Vec<_>>()),
         input: matches.value_of("file"),
         print_only_count: matches.is_present("count"),
         highlight_matches: match (matches.value_of("colour"), stdout_isatty()) {

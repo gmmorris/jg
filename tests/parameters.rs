@@ -31,17 +31,18 @@ mod parameters {
         cmd.arg("--params").arg(r#"mp4"#);
         cmd.arg("--params").arg(r#"aac"#);
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer(r#"{"video":{"mimes":["audio/mp4","image/jpg","image/gif"]}}
+        let mut assert_cmd = stdin_cmd.buffer(
+            r#"{"video":{"mimes":["audio/mp4","image/jpg","image/gif"]}}
 {"audio":{"format":"aac"}}
 {"audio":{"format":"{}"}}
-"#);
+"#,
+        );
 
-        assert_cmd
-            .assert()
-            .success()
-            .stdout(r#"{"video":{"mimes":["audio/mp4","image/jpg","image/gif"]}}
+        assert_cmd.assert().success().stdout(
+            r#"{"video":{"mimes":["audio/mp4","image/jpg","image/gif"]}}
 {"audio":{"format":"aac"}}
-"#);
+"#,
+        );
     }
 
     #[test]
@@ -52,18 +53,19 @@ mod parameters {
         cmd.arg("-e").arg(r#".video.mimes[*="{}"]"#);
         cmd.arg("-e").arg(r#".audio{"format"*:"{}"}"#);
         cmd.arg("--params").arg(r#"mp4"#);
-        
+
         let mut stdin_cmd = cmd.with_stdin();
-        let mut assert_cmd = stdin_cmd.buffer(r#"{"video":{"mimes":["audio/mp4","image/jpg","image/gif"]}}
+        let mut assert_cmd = stdin_cmd.buffer(
+            r#"{"video":{"mimes":["audio/mp4","image/jpg","image/gif"]}}
 {"audio":{"format":"aac"}}
 {"audio":{"format":"---{}---"}}
-"#);
+"#,
+        );
 
-        assert_cmd
-            .assert()
-            .success()
-            .stdout(r#"{"video":{"mimes":["audio/mp4","image/jpg","image/gif"]}}
+        assert_cmd.assert().success().stdout(
+            r#"{"video":{"mimes":["audio/mp4","image/jpg","image/gif"]}}
 {"audio":{"format":"---{}---"}}
-"#);
+"#,
+        );
     }
 }
