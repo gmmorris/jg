@@ -7,6 +7,7 @@ use std::result::Result;
 use std::string::String;
 
 mod enumeration;
+pub mod parameter_substitution;
 use crate::selection::match_json_slice;
 use crate::selection::SelectionLens;
 
@@ -18,6 +19,7 @@ pub enum HighlightMatches {
 
 pub struct Config<'a> {
     pub matchers: Vec<&'a str>,
+    pub params: Option<Vec<&'a str>>,
     pub input: Option<&'a str>,
     pub print_only_count: bool,
     pub print_line_number: bool,

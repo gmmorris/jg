@@ -68,6 +68,14 @@ fn main() {
                 .help("Each output line is preceded by its relative line number in the file, starting at line 1.")
         )
         .arg(
+            Arg::with_name("params")
+                .multiple(true)
+                .takes_value(true)
+                .short("p")
+                .long("params")
+                .help("Parameters to be substituted within the specified pattern")
+        )
+        .arg(
             Arg::with_name("quiet")
                 .short("q")
                 .long("quiet")
@@ -93,8 +101,10 @@ fn main() {
         })
         .expect("No matcher pattern has been specified");
 
+
     let config = jg::input::Config {
         matchers: matched_filters,
+        params: matches.values_of("params").map(|values| values.collect::<Vec<_>>()),
         input: matches.value_of("file"),
         print_only_count: matches.is_present("count"),
         highlight_matches: match (matches.value_of("colour"), stdout_isatty()) {

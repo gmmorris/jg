@@ -8,8 +8,16 @@ pub mod input;
 mod selection;
 
 pub fn json_grep(config: input::Config) -> Result<(), Option<String>> {
-    let matched_filters: Result<Vec<_>, String> = config
-        .matchers
+
+    let lens_patterns = match config.params {
+        Some(ref params) => input::parameter_substitution::apply_substitution(
+            &config.matchers,
+            params
+        ),
+        None => config.matchers.iter().map(|s| s.to_string()).collect()
+    };
+    
+    let matched_filters: Result<Vec<_>, String> = lens_patterns
         .iter()
         .map(|pattern| input::in_configured_case(pattern, &config))
         .map(|pattern| selection::match_filters(&pattern))
