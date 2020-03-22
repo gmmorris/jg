@@ -26,9 +26,6 @@ matrix:
     # OSX
     - os: osx
       rust: stable
-      env: TARGET=i686-apple-darwin
-    - os: osx
-      rust: stable
       env: TARGET=x86_64-apple-darwin
 
     # Beta channel to make sure there are no regressions
