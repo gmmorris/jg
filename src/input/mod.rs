@@ -33,15 +33,15 @@ pub struct Config<'a> {
 
 pub fn scan_input_for_matching_lines<'a>(
     config: &Config,
-    on_line: &Fn(String) -> Result<String, String>,
-    on_result: &Fn(
+    on_line: &dyn Fn(String) -> Result<String, String>,
+    on_result: &dyn Fn(
         (Option<usize>, Option<usize>, Result<String, String>),
     ) -> (Option<usize>, Option<usize>),
 ) -> Result<Option<usize>, Option<String>> {
     let stdin = io::stdin();
     let input = match config.input {
         Some(input) => buffer_input_file(input)?,
-        None => Box::new(stdin.lock()) as Box<BufRead>,
+        None => Box::new(stdin.lock()) as Box<dyn BufRead>,
     };
 
     let mut result_enumerator = enumeration::Enumeration::new(
@@ -66,7 +66,7 @@ pub fn scan_input_for_matching_lines<'a>(
         .unwrap_or(Err(None))
 }
 
-fn buffer_input_file(input: &str) -> Result<Box<BufRead>, Option<String>> {
+fn buffer_input_file(input: &str) -> Result<Box<dyn BufRead>, Option<String>> {
     match File::open(input) {
         Ok(contents) => Ok(Box::new(BufReader::new(contents))),
         Err(error) => Err(match error.kind() {
@@ -91,7 +91,7 @@ pub fn in_configured_case(value: &str, config: &Config) -> String {
 }
 
 pub fn match_line(
-    matchers: &Vec<Vec<Box<SelectionLens>>>,
+    matchers: &Vec<Vec<Box<dyn SelectionLens>>>,
     config: &Config,
     input: String,
 ) -> Result<String, String> {

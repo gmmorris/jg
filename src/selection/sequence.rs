@@ -4,7 +4,7 @@ use regex::Regex;
 use super::{match_json_slice, try_to_match_filters, SelectionLens, SelectionLensParser};
 
 struct Sequence {
-    matchers: Vec<Box<SelectionLens>>,
+    matchers: Vec<Box<dyn SelectionLens>>,
 }
 
 impl SelectionLens for Sequence {
@@ -39,7 +39,7 @@ impl SelectionLensParser for SequenceParser {
     fn try_parse<'a>(
         &self,
         lens_pattern: Option<&'a str>,
-    ) -> Result<(Box<SelectionLens>, Option<&'a str>), Option<&'a str>> {
+    ) -> Result<(Box<dyn SelectionLens>, Option<&'a str>), Option<&'a str>> {
         match lens_pattern
             .and_then(SequenceParser::match_sequence)
             .map(try_to_match_filters)

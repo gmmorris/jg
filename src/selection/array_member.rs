@@ -163,7 +163,7 @@ impl SelectionLensParser for ArrayMemberParser {
     fn try_parse<'a>(
         &self,
         lens_pattern: Option<&'a str>,
-    ) -> Result<(Box<SelectionLens>, Option<&'a str>), Option<&'a str>> {
+    ) -> Result<(Box<dyn SelectionLens>, Option<&'a str>), Option<&'a str>> {
         match lens_pattern {
             Some(pattern) => match ArrayMemberParser::match_array_member(pattern) {
                 Some((array_member, remainder)) => Ok((

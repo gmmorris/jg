@@ -8,7 +8,7 @@ pub trait SelectionLensParser {
     fn try_parse<'a>(
         &self,
         lens_pattern: Option<&'a str>,
-    ) -> Result<(Box<SelectionLens>, Option<&'a str>), Option<&'a str>>;
+    ) -> Result<(Box<dyn SelectionLens>, Option<&'a str>), Option<&'a str>>;
 }
 
 mod array_member;
@@ -18,7 +18,7 @@ mod sequence;
 mod value_matchers;
 
 pub fn match_json_slice<'a>(
-    matchers: &Vec<Box<SelectionLens>>,
+    matchers: &Vec<Box<dyn SelectionLens>>,
     json_input: &'a JsonValue,
     match_root_only: bool,
 ) -> Result<&'a JsonValue, ()> {
@@ -48,7 +48,7 @@ pub fn match_json_slice<'a>(
     }
 }
 
-pub fn match_filter(filter: &str) -> Result<(Box<SelectionLens>, Option<&str>), &str> {
+pub fn match_filter(filter: &str) -> Result<(Box<dyn SelectionLens>, Option<&str>), &str> {
     lazy_static! {
         static ref IDENTITY_PARSER: identity::IdentityParser = identity::IdentityParser {};
         static ref PROP_PARSER: prop::PropParser = prop::PropParser {};
@@ -65,8 +65,8 @@ pub fn match_filter(filter: &str) -> Result<(Box<SelectionLens>, Option<&str>), 
         .map_err(|_| filter)
 }
 
-pub fn try_to_match_filters(filter: &str) -> Result<Vec<Box<SelectionLens>>, &str> {
-    let mut matchers: Vec<Box<SelectionLens>> = vec![];
+pub fn try_to_match_filters(filter: &str) -> Result<Vec<Box<dyn SelectionLens>>, &str> {
+    let mut matchers: Vec<Box<dyn SelectionLens>> = vec![];
     let mut unmatched_filter: Result<Option<&str>, &str> = Ok(Some(filter));
     while let Ok(Some(filter)) = unmatched_filter {
         match match_filter(filter) {
@@ -86,7 +86,7 @@ pub fn try_to_match_filters(filter: &str) -> Result<Vec<Box<SelectionLens>>, &st
     }
 }
 
-pub fn match_filters(filter: &str) -> Result<Vec<Box<SelectionLens>>, String> {
+pub fn match_filters(filter: &str) -> Result<Vec<Box<dyn SelectionLens>>, String> {
     try_to_match_filters(filter)
         .map_err(|unmatched_filter| format!("Invalid filter: {:?}", unmatched_filter))
 }
