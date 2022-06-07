@@ -23,7 +23,7 @@ pub fn match_json_slice<'a>(
     match_root_only: bool,
 ) -> Result<&'a JsonValue, ()> {
     match matchers.iter().try_fold(json_input, |json_slice, matcher| {
-        matcher.select(Some(&json_slice))
+        matcher.select(Some(json_slice))
     }) {
         Some(matching_slice) => Ok(matching_slice),
         None => match (match_root_only, json_input) {

@@ -41,16 +41,14 @@ impl Prop {
                 Some(prop).filter(|_| {
                     string_prop
                         .split_whitespace()
-                        .find(|string_prop| string_prop.eq(prop_value))
-                        .is_some()
+                        .any(|string_prop| string_prop.eq(prop_value))
                 })
             }
             (&JsonValue::Short(ref string_prop), &JsonValueMatcher::String(ref prop_value)) => {
                 Some(prop).filter(|_| {
                     string_prop
                         .split_whitespace()
-                        .find(|string_prop| string_prop.eq(prop_value))
-                        .is_some()
+                        .any(|string_prop| string_prop.eq(prop_value))
                 })
             }
             (_, _) => None,
@@ -192,7 +190,7 @@ mod tests {
         let res = prop_parser.try_parse(Some(".name"));
         assert!(res.is_ok());
 
-        let ref data = object! {
+        let data = &object! {
             "name"    => "John Doe",
             "age"     => 30
         };
@@ -237,7 +235,7 @@ mod tests {
 
     #[test]
     fn should_return_json_prop_when_json_has_prop() {
-        let ref data = object! {
+        let data = &object! {
             "name"    => "John Doe",
             "age"     => 30
         };
@@ -256,7 +254,7 @@ mod tests {
         let res = prop_parser.try_parse(Some(r#"{"age":30}"#));
         assert!(res.is_ok());
 
-        let ref data = object! {
+        let data = &object! {
             "name"    => "John Doe",
             "age"     => 30
         };
@@ -273,7 +271,7 @@ mod tests {
         let res = prop_parser.try_parse(Some(r#"{"country":"IRL"}"#));
         assert!(res.is_ok());
 
-        let ref data = object! {
+        let data = &object! {
             "name"      => "John Doe",
             "age"       => 30,
             "country"   => "IRL"
@@ -291,7 +289,7 @@ mod tests {
         let res = prop_parser.try_parse(Some(r#"{"country"~:"GBR"}"#));
         assert!(res.is_ok());
 
-        let ref data = object! {
+        let data = &object! {
             "name"      => "John Doe",
             "age"       => 30,
             "country"   => "IRL GBR"
@@ -309,7 +307,7 @@ mod tests {
         let res = prop_parser.try_parse(Some(r#"{"country"^:"IRL"}"#));
         assert!(res.is_ok());
 
-        let ref data = object! {
+        let data = &object! {
             "name"      => "John Doe",
             "age"       => 30,
             "country"   => "IRL GBR"
@@ -327,7 +325,7 @@ mod tests {
         let res = prop_parser.try_parse(Some(r#"{"country"$:"GBR"}"#));
         assert!(res.is_ok());
 
-        let ref data = object! {
+        let data = &object! {
             "name"      => "John Doe",
             "age"       => 30,
             "country"   => "IRL GBR"
@@ -345,7 +343,7 @@ mod tests {
         let res = prop_parser.try_parse(Some(r#"{"is_known":false}"#));
         assert!(res.is_ok());
 
-        let ref data = object! {
+        let data = &object! {
             "name"      => "John Doe",
             "age"       => 30,
             "is_known"  => false
@@ -363,7 +361,7 @@ mod tests {
         let res = prop_parser.try_parse(Some(r#"{"is_anonymous":true}"#));
         assert!(res.is_ok());
 
-        let ref data = object! {
+        let data = &object! {
             "name"          => "John Doe",
             "age"           => 30,
             "is_anonymous"  => true
@@ -381,7 +379,7 @@ mod tests {
         let res = prop_parser.try_parse(Some(r#"{"identity":null}"#));
         assert!(res.is_ok());
 
-        let ref data = object! {
+        let data = &object! {
             "name"          => "John Doe",
             "age"           => 30,
             "identity"      => JsonValue::Null
