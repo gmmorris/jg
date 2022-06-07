@@ -96,5 +96,4 @@ mod cli {
 4:{\"name\":\"jeff goldblum\"}\n",
         );
     }
-
 }
