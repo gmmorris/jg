@@ -62,7 +62,7 @@ mod tests {
         let res = sequence_parser.try_parse(Some("[.name]"));
         assert!(res.is_ok());
 
-        let data = &object! {
+        let ref data = object! {
           "name"    => "John Doe",
           "age"     => 30,
           "identities" => array![object! {
@@ -81,7 +81,7 @@ mod tests {
 
     #[test]
     fn should_return_none_when_json_sequence_is_empty() {
-        let data = &object! {
+        let ref data = object! {
           "name"    => "John Doe",
           "age"     => 30,
           "identities" => array![]

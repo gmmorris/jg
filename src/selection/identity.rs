@@ -36,7 +36,7 @@ mod tests {
         let res = identity_parser.try_parse(Some("."));
         assert!(res.is_ok());
 
-        let data = &object! {
+        let ref data = object! {
             "name"    => "John Doe",
             "age"     => 30
         };
@@ -69,7 +69,7 @@ mod tests {
 
     #[test]
     fn should_return_some_json_when_json_is_present() {
-        let data = &object! {
+        let ref data = object! {
             "name"    => "John Doe",
             "age"     => 30
         };

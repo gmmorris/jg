@@ -5,7 +5,7 @@ pub fn apply_substitution(sources: &Vec<&str>, params: &Vec<&str>) -> Vec<String
         .map(move |&src| {
             let mut src = String::from(src);
             if params.peek().is_some() {
-                while src.contains("{}") {
+                while let Some(_) = src.find("{}") {
                     if let Some(param) = params.next() {
                         src = src.replacen("{}", param, 1);
                     } else {

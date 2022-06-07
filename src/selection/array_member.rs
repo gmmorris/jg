@@ -192,7 +192,7 @@ mod tests {
         let res = array_member_parser.try_parse(Some("[0]"));
         assert!(res.is_ok());
 
-        let data = &array![object! {
+        let ref data = array![object! {
             "name"    => "John Doe",
             "age"     => 30
         }];
@@ -217,7 +217,7 @@ mod tests {
 
     #[test]
     fn should_return_node_when_json_is_present() {
-        let data = &array![object! {
+        let ref data = array![object! {
             "name"    => "John Doe",
             "age"     => 30
         }];
@@ -234,7 +234,7 @@ mod tests {
 
     #[test]
     fn should_return_node_when_exact_string_value_is_only_value_in_array() {
-        let data = &array!["Jane Doe"];
+        let ref data = array!["Jane Doe"];
 
         let array_member = ArrayValueMember {
             value: JsonValueMemberMatcher::Exact(JsonValueMatcher::String(String::from(
@@ -246,7 +246,7 @@ mod tests {
 
     #[test]
     fn should_return_node_when_exact_string_value_is_contained_in_array() {
-        let data = &array!["John Doe", "Jane Doe", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."];
+        let ref data = array!["John Doe", "Jane Doe", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."];
 
         let array_member = ArrayValueMember {
             value: JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::String(String::from(
@@ -263,7 +263,7 @@ mod tests {
 
     #[test]
     fn should_return_node_when_boolean_value_is_present_in_array() {
-        let data = &array![true, false];
+        let ref data = array![true, false];
 
         let array_member = ArrayValueMember {
             value: JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::Boolean(true)),
@@ -278,7 +278,7 @@ mod tests {
 
     #[test]
     fn should_return_node_when_null_value_is_present_in_array() {
-        let data = &array![true, JsonValue::Null];
+        let ref data = array![true, JsonValue::Null];
 
         let array_member = ArrayValueMember {
             value: JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::Null),
@@ -288,7 +288,7 @@ mod tests {
 
     #[test]
     fn should_return_node_when_numeric_value_is_present_in_array() {
-        let data = &array![0, -10, 10, 123456789];
+        let ref data = array![0, -10, 10, 123456789];
 
         let array_member = ArrayValueMember {
             value: JsonValueMemberMatcher::ContainsExact(JsonValueMatcher::Number(0)),

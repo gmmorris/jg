@@ -4,7 +4,7 @@ mod cli {
     use predicates::prelude::*;
     use std::io::Write;
     use std::process::Command;
-    
+    use tempfile;
 
     #[test]
     fn should_read_input_file_when_provided() {
