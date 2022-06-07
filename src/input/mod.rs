@@ -56,7 +56,7 @@ pub fn scan_input_for_matching_lines<'a>(
         })
         .map(|res| result_enumerator.enumerate(res))
         .filter(|(_, _, match_result)| match_result.is_ok())
-        .map(|res| on_result(res))
+        .map(on_result)
         .take_while(|(_, matched_lines)| match config.max_num {
             Some(max) => matched_lines.map(|matched| matched < max).unwrap_or(true),
             None => true,
