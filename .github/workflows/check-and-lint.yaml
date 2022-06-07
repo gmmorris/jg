@@ -2,8 +2,7 @@ on:
   pull_request:
   push:
     branches:
-      - main
-
+      - master
 
 name: Check and Lint
 
