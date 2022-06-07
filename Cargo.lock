@@ -297,7 +297,7 @@ checksum = "552840b97013b1a26992c11eac34bdd778e464601a4c2054b5f0bff7c6761293"
 dependencies = [
  "fuchsia-cprng",
  "libc",
- "rand_core",
+ "rand_core 0.3.1",
  "rdrand",
  "winapi",
 ]
@@ -312,7 +312,7 @@ dependencies = [
  "fuchsia-zircon",
  "libc",
  "rand_chacha",
- "rand_core",
+ "rand_core 0.3.1",
  "rand_hc",
  "rand_isaac",
  "rand_pcg",
@@ -327,15 +327,24 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "771b009e3a508cb67e8823dda454aaa5368c7bc1c16829fb77d3e980440dd34a"
 dependencies = [
- "rand_core",
+ "rand_core 0.3.1",
  "rustc_version",
 ]
 
 [[package]]
 name = "rand_core"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0905b6b7079ec73b314d4c748701f6931eb79fd97c668caa3f1899b22b32c6db"
+checksum = "7a6fdeb83b075e8266dcc8762c22776f6877a63111121f5f8c7411e5be7eed4b"
+dependencies = [
+ "rand_core 0.4.2",
+]
+
+[[package]]
+name = "rand_core"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c33a3c44ca05fa6f1807d8e6743f3824e8509beca625669633be0acbdf509dc"
 
 [[package]]
 name = "rand_hc"
@@ -343,7 +352,7 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7b40677c7be09ae76218dc623efbf7b18e34bced3f38883af07bb75630a21bc4"
 dependencies = [
- "rand_core",
+ "rand_core 0.3.1",
 ]
 
 [[package]]
@@ -352,7 +361,7 @@ version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ded997c9d5f13925be2a6fd7e66bf1872597f759fd9dd93513dd7e92e5a5ee08"
 dependencies = [
- "rand_core",
+ "rand_core 0.3.1",
 ]
 
 [[package]]
@@ -361,7 +370,7 @@ version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "086bd09a33c7044e56bb44d5bdde5a60e7f119a9e95b0775f545de759a32fe05"
 dependencies = [
- "rand_core",
+ "rand_core 0.3.1",
  "rustc_version",
 ]
 
@@ -371,7 +380,7 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "effa3fcaa47e18db002bdde6060944b6d2f9cfd8db471c30e873448ad9187be3"
 dependencies = [
- "rand_core",
+ "rand_core 0.3.1",
 ]
 
 [[package]]
@@ -380,7 +389,7 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "678054eb77286b51581ba43620cc911abf02758c91f93f479767aed0f90458b2"
 dependencies = [
- "rand_core",
+ "rand_core 0.3.1",
 ]
 
 [[package]]
