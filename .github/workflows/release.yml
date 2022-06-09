@@ -1,6 +1,4 @@
-on:
-  release:
-    types: [created]
+name: "Release"
 
 on: # yamllint disable-line rule:truthy
   push:
