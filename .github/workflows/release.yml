@@ -26,5 +26,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          RUSTTARGET: "jg-${GITHUB_REF#refs/tags/}-${{ matrix.target }}"
+          RUSTTARGET: ${{ matrix.target }}
           ARCHIVE_TYPES: ${{ matrix.archive }}
