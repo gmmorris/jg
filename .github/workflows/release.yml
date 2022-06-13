@@ -38,6 +38,7 @@ jobs:
         env:
           # (required)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ matrix.target }}
 
   upload-assets-with-rpm-and-deb:
     strategy:
@@ -63,6 +64,7 @@ jobs:
         env:
           # (required)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ matrix.target }}
         # run: |
         #   package="${{ steps.version.outputs.package }}"
         #   version="${{ steps.version.outputs.version }}"
