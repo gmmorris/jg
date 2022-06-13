@@ -56,9 +56,13 @@ jobs:
       - uses: ebbflow-io/cargo-rpm-amd64-fedora@1.1
         with:
           target: ${{ matrix.target }}
+        env:
+          TARGET: ${{ matrix.target }}
       - uses: ebbflow-io/cargo-deb-amd64-ubuntu@1.0
         with:
           target: ${{ matrix.target }}
+        env:
+          TARGET: ${{ matrix.target }}
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: jg
