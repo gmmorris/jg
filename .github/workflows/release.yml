@@ -54,7 +54,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ebbflow-io/cargo-rpm-amd64-fedora@1.1
+        with:
+          target: ${{ matrix.target }}
       - uses: ebbflow-io/cargo-deb-amd64-ubuntu@1.0
+        with:
+          target: ${{ matrix.target }}
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: jg
@@ -64,7 +68,6 @@ jobs:
         env:
           # (required)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TARGET: ${{ matrix.target }}
         # run: |
         #   package="${{ steps.version.outputs.package }}"
         #   version="${{ steps.version.outputs.version }}"
