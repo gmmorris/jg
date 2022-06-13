@@ -16,18 +16,12 @@ jobs:
           # (required)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  upload-assets:
+  upload-assets-as-is:
     strategy:
       matrix:
         include:
-          - target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
           - target: aarch64-apple-darwin
             os: macos-latest
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-          - target: x86_64-unknown-linux-musl
-            os: ubuntu-latest
           - target: x86_64-apple-darwin
             os: macos-latest
           - target: wasm32-wasi
@@ -44,3 +38,41 @@ jobs:
         env:
           # (required)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-assets-with-rpm-and-deb:
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ebbflow-io/cargo-rpm-amd64-fedora@1.1
+      - uses: ebbflow-io/cargo-deb-amd64-ubuntu@1.0
+      - uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: jg
+          # (optional) Target triple, default is host triple.
+          target: ${{ matrix.target }}
+          archive: $bin-$tag-$target
+        env:
+          # (required)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # run: |
+        #   package="${{ steps.version.outputs.package }}"
+        #   version="${{ steps.version.outputs.version }}"
+        #   curl -LsSf "$PARSE_CHANGELOG_URL" | tar xzf -
+        #   notes=$(./parse-changelog packages/${package}/CHANGELOG.md "${version#v}")
+        #   tag="${{ steps.version.outputs.raw }}"
+        #   if gh release view "${tag}" &>/dev/null; then
+        #     gh release delete "${tag}" -y
+        #   fi
+        #   if ${{ steps.version.outputs.prerelease }}; then
+        #     prerelease="--prerelease"
+        #   fi
+        #   gh release create "${tag}" $prerelease --draft --title "${package} ${version}" --notes "${notes}"
