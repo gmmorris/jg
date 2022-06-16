@@ -34,16 +34,30 @@ jobs:
         run: cargo test
       - name: Build code
         run: cargo build
+  # rpmbuild:
+  #   needs: [check_quality]
+  #   runs-on: ubuntu-latest
+  #   name: Build RPM package 
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: buildrpm
+  #     id: buildrpm
+  #     uses: ebbflow-io/cargo-rpm-amd64-fedora@1.1
+  #   - name: Up RPM
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: fedorarpm
+  #       path: ./target/release/rpmbuild/RPMS/x86_64/*
   rpmbuild:
     needs: [check_quality]
     runs-on: ubuntu-latest
-    name: Build RPM package 
+    name: FedoraRpm
     steps:
     - uses: actions/checkout@v2
-    - name: buildrpm
+    - name: BuildRpm
       id: buildrpm
-      uses: ebbflow-io/cargo-rpm-amd64-fedora@1.1
-    - name: Up RPM
+      uses: jamesmcm/cargo-rpm-amd64-fedora@master
+    - name: Upload RPM Artifact
       uses: actions/upload-artifact@v2
       with:
         name: fedorarpm
