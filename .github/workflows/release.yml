@@ -18,7 +18,7 @@ jobs:
           toolchain: stable
       - name: Get package version
         id: packagever
-        run: echo "::set-output name=version::$(cargo pkgid | awk -F ":" '{print $3}')"
+        run: echo "::set-output name=version::$(cargo pkgid | awk -F "#" '{print $2}')"
         shell: bash
   check_quality:
     needs: getversion
