@@ -71,7 +71,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: build
-          args: '--release -v'
+          args: '--release'
       - uses: actions/upload-artifact@v2
         with:
           name: jg-${{ matrix.target }}
@@ -160,7 +160,7 @@ jobs:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       with:
         upload_url: '${{ steps.create_release.outputs.upload_url }}'
-        asset_path: ./jg-x86_64-unknown-linux-gnu/jg
+        asset_path: jg-x86_64-unknown-linux-gnu
         asset_name: jg-x86_64-unknown-linux-gnu
         asset_content_type: application/octet-stream
     - uses: actions/upload-release-asset@v1.0.1
@@ -168,7 +168,7 @@ jobs:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       with:
         upload_url: '${{ steps.create_release.outputs.upload_url }}'
-        asset_path: ./jg-x86_64-unknown-linux-musl/jg
+        asset_path: jg-x86_64-unknown-linux-musl
         asset_name: jg-x86_64-unknown-linux-musl
         asset_content_type: application/octet-stream
     - uses: actions/upload-release-asset@v1.0.1
@@ -176,7 +176,7 @@ jobs:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       with:
         upload_url: '${{ steps.create_release.outputs.upload_url }}'
-        asset_path: ./jg-wasm32-wasi/jg
+        asset_path: jg-wasm32-wasi
         asset_name: jg-wasm32-wasi
         asset_content_type: application/octet-stream
     - uses: actions/upload-release-asset@v1.0.1
@@ -184,7 +184,7 @@ jobs:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       with:
         upload_url: '${{ steps.create_release.outputs.upload_url }}'
-        asset_path: ./jg-x86_64-apple-darwin/jg
+        asset_path: jg-x86_64-apple-darwin
         asset_name: jg-x86_64-apple-darwin
         asset_content_type: application/octet-stream
     - uses: actions/upload-release-asset@v1.0.1
@@ -192,7 +192,7 @@ jobs:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       with:
         upload_url: '${{ steps.create_release.outputs.upload_url }}'
-        asset_path: ./jg-x86_64-pc-windows-msvc/jg.exe
+        asset_path: jg-x86_64-pc-windows-msvc.exe
         asset_name:  jg-x86_64-pc-windows-msvc.exe
         asset_content_type: application/octet-stream
     - uses: actions/download-artifact@v2
