@@ -34,6 +34,51 @@ jobs:
         run: cargo test
       - name: Build code
         run: cargo build
+  crossbuild:
+    needs: [getversion, check_quality]
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            suffix: ''
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            suffix: ''
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            suffix: .exe
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+            suffix: ''
+          - target: wasm32-wasi
+            os: ubuntu-latest
+            suffix: ''
+    steps:
+      - uses: actions/checkout@master
+        with:
+          lfs: true
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: 'toml-cli'
+      - uses: actions-rs/cargo@v1
+        env:
+          VERSION: '${{ needs.getversion.outputs.version }}'
+          REPOSITORY_NAME: 'jg'
+        with:
+          command: build
+          args: '--release'
+      - uses: actions/upload-artifact@master
+        with:
+          name: jg-${{ matrix.target }}
+          path: ./target/release/jg${{ matrix.suffix }}
   rpmbuild:
     needs: [check_quality]
     runs-on: ubuntu-latest
@@ -92,7 +137,7 @@ jobs:
   #         ssh_keyscan_types: rsa,dsa,ecdsa,ed25519
           
   create_release:
-    needs: [getversion, check_quality, rpmbuild, builddeb] # buildaur
+    needs: [getversion, check_quality, crossbuild, rpmbuild, builddeb] # buildaur
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -110,7 +155,46 @@ jobs:
         release_name: Release ${{ needs.getversion.outputs.version }}
         # body_path: 'changelog.txt'
         draft: false
-
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      with:
+        upload_url: '${{ steps.create_release.outputs.upload_url }}'
+        asset_path: ./jg-x86_64-unknown-linux-gnu/jg
+        asset_name: jg-x86_64-unknown-linux-gnu
+        asset_content_type: application/octet-stream
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      with:
+        upload_url: '${{ steps.create_release.outputs.upload_url }}'
+        asset_path: ./jg-x86_64-unknown-linux-musl/jg
+        asset_name: jg-x86_64-unknown-linux-musl
+        asset_content_type: application/octet-stream
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      with:
+        upload_url: '${{ steps.create_release.outputs.upload_url }}'
+        asset_path: ./jg-wasm32-wasi/jg
+        asset_name: jg-wasm32-wasi
+        asset_content_type: application/octet-stream
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      with:
+        upload_url: '${{ steps.create_release.outputs.upload_url }}'
+        asset_path: ./jg-x86_64-apple-darwin/jg
+        asset_name: jg-x86_64-apple-darwin
+        asset_content_type: application/octet-stream
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      with:
+        upload_url: '${{ steps.create_release.outputs.upload_url }}'
+        asset_path: ./jg-x86_64-pc-windows-msvc/jg.exe
+        asset_name:  jg-x86_64-pc-windows-msvc.exe
+        asset_content_type: application/octet-stream
     - uses: actions/download-artifact@v2
     - run: ls -lahR
     - name: Upload fedora RPM
