@@ -155,48 +155,48 @@ jobs:
         release_name: v${{ needs.getversion.outputs.version }}
         # body_path: 'changelog.txt'
         draft: false
-    # - uses: actions/upload-release-asset@v1.0.1
-    #   env:
-    #     GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-    #   with:
-    #     upload_url: '${{ steps.create_release.outputs.upload_url }}'
-    #     asset_path: ./jg-x86_64-unknown-linux-gnu/jg
-    #     asset_name: jg-x86_64-unknown-linux-gnu
-    #     asset_content_type: application/octet-stream
-    # - uses: actions/upload-release-asset@v1.0.1
-    #   env:
-    #     GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-    #   with:
-    #     upload_url: '${{ steps.create_release.outputs.upload_url }}'
-    #     asset_path: ./jg-x86_64-unknown-linux-musl/jg
-    #     asset_name: jg-x86_64-unknown-linux-musl
-    #     asset_content_type: application/octet-stream
-    # - uses: actions/upload-release-asset@v1.0.1
-    #   env:
-    #     GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-    #   with:
-    #     upload_url: '${{ steps.create_release.outputs.upload_url }}'
-    #     asset_path: ./jg-wasm32-wasi/jg
-    #     asset_name: jg-wasm32-wasi
-    #     asset_content_type: application/octet-stream
-    # - uses: actions/upload-release-asset@v1.0.1
-    #   env:
-    #     GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-    #   with:
-    #     upload_url: '${{ steps.create_release.outputs.upload_url }}'
-    #     asset_path: ./jg-x86_64-apple-darwin/jg
-    #     asset_name: jg-x86_64-apple-darwin
-    #     asset_content_type: application/octet-stream
+    - uses: actions/download-artifact@v2
+    - run: ls -lahR
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      with:
+        upload_url: '${{ steps.create_release.outputs.upload_url }}'
+        asset_path: ./jg-x86_64-unknown-linux-gnu/jg
+        asset_name: jg-x86_64-unknown-linux-gnu
+        asset_content_type: application/octet-stream
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      with:
+        upload_url: '${{ steps.create_release.outputs.upload_url }}'
+        asset_path: ./jg-x86_64-unknown-linux-musl/jg
+        asset_name: jg-x86_64-unknown-linux-musl
+        asset_content_type: application/octet-stream
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      with:
+        upload_url: '${{ steps.create_release.outputs.upload_url }}'
+        asset_path: ./jg-wasm32-wasi/jg
+        asset_name: jg-wasm32-wasi
+        asset_content_type: application/octet-stream
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      with:
+        upload_url: '${{ steps.create_release.outputs.upload_url }}'
+        asset_path: ./jg-x86_64-apple-darwin/jg
+        asset_name: jg-x86_64-apple-darwin
+        asset_content_type: application/octet-stream
     - uses: actions/upload-release-asset@v1.0.1
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       with:
         upload_url: '${{ steps.create_release.outputs.upload_url }}'
         asset_path: ./jg-x86_64-pc-windows-msvc/jg.exe
-        asset_name:  jg-x86_64-pc-windows-msvc
+        asset_name: jg-x86_64-pc-windows-msvc
         asset_content_type: application/octet-stream
-    - uses: actions/download-artifact@v2
-    - run: ls -lahR
     - name: Upload fedora RPM
       uses: actions/upload-release-asset@v1
       env:
