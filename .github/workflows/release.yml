@@ -119,7 +119,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: 'fedorarpm/jg-${{ needs.getversion.outputs.version }}-1.fc32.x86_64.rpm'
+        asset_path: 'fedorarpm/jg-${{ needs.getversion.outputs.version }}-1.x86_64.rpm'
         asset_name: 'jg.rpm'
         asset_content_type: application/octet-stream
     - name: Upload amd64 deb Release Asset
