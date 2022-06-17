@@ -32,7 +32,6 @@ isatty = "0.1"
 
 [package.metadata.rpm.cargo]
 buildflags = ["--release"]
-target = "$TARGET"
 
 [package.metadata.rpm.targets]
 jg = { path = "/usr/bin/jg" }
