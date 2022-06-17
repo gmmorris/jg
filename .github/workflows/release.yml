@@ -69,16 +69,14 @@ jobs:
           command: install
           args: 'toml-cli'
       - uses: actions-rs/cargo@v1
-        env:
-          VERSION: '${{ needs.getversion.outputs.version }}'
-          REPOSITORY_NAME: 'jg'
         with:
           command: build
-          args: '--release'
-      - uses: actions/upload-artifact@master
+          args: '--release -v'
+      - uses: actions/upload-artifact@v2
         with:
           name: jg-${{ matrix.target }}
           path: ./target/release/jg${{ matrix.suffix }}
+          if-no-files-found: error
   rpmbuild:
     needs: [check_quality]
     runs-on: ubuntu-latest
@@ -93,6 +91,7 @@ jobs:
       with:
         name: fedorarpm
         path: ./target/release/rpmbuild/RPMS/x86_64/*
+        if-no-files-found: error
   builddeb:
     needs: [check_quality]
     runs-on: ubuntu-latest
@@ -107,6 +106,7 @@ jobs:
       with:
         name: jgdeb
         path: ./target/x86_64-unknown-linux-musl/debian/*
+        if-no-files-found: error
   # buildaur:
   #   runs-on: ubuntu-latest
   #   steps:
