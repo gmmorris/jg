@@ -9,7 +9,7 @@
 1. if the line of JSON does in fact match the selector pattern then **jg** will print the line
 
 Read all about the reasoning behind the **jg**'s creation here:
-https://gidi.io/2019/03/01/structured-greping-of-structured-logging-using-grep-for-json.html
+https://gidi.io/tooling/2019/03/01/structured-greping-of-structured-logging-using-grep-for-json/
 
 Read all about Newline-Delimited JSON which is a useful format for log files and streaming structured data here:
 http://ndjson.org/
