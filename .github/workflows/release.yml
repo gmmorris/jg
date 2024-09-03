@@ -155,7 +155,7 @@ jobs:
         release_name: v${{ needs.getversion.outputs.version }}
         # body_path: 'changelog.txt'
         draft: false
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v4.1.7
     - run: ls -lahR
     - uses: actions/upload-release-asset@v1.0.1
       env:
